@@ -1,0 +1,39 @@
+@import "tailwindcss";
+@theme {
+  --color-ink: #17211b;
+  --color-forest: #174f3f;
+  --color-mint: #dff3e8;
+  --color-cream: #f7f5ef;
+  --color-coral: #e36f55;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+@layer base {
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--color-ink); background: #fbfaf7; font-family: var(--font-sans); }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  button { cursor: pointer; }
+  input, select, textarea { outline: none; }
+  input:focus, select:focus, textarea:focus { border-color: var(--color-forest); box-shadow: 0 0 0 3px rgb(23 79 63 / .1); }
+}
+@layer components {
+  .container-app { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold transition hover:border-forest hover:text-forest; }
+  .field { @apply w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm transition; }
+  .label { @apply mb-1.5 block text-sm font-medium; }
+  .card { @apply rounded-2xl border border-black/6 bg-white shadow-sm; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+@media (max-width: 640px) {
+  .btn-primary, .btn-secondary { min-height: 44px; }
+  input, select, textarea { font-size: 16px; }
+}
+:focus-visible { outline: 3px solid rgb(23 79 63 / .35); outline-offset: 2px; }

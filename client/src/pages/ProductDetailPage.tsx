@@ -1,0 +1,17 @@
+import { Minus, Plus, ShieldCheck, ShoppingBag } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { toast } from 'sonner'
+import { api, errorMessage } from '../api/client'
+import { useAppDispatch } from '../app/hooks'
+import { Spinner } from '../components/Spinner'
+import { addToCart } from '../features/cart/cartSlice'
+import type { ApiResponse, Product } from '../types'
+import { money } from '../utils/format'
+export function ProductDetailPage() {
+  const { id } = useParams(); const [product, setProduct] = useState<Product>(); const [selected, setSelected] = useState(0); const [quantity, setQuantity] = useState(1); const [error, setError] = useState(''); const dispatch = useAppDispatch()
+  useEffect(() => { api.get<ApiResponse<{ product: Product }>>(`/products/${id}`).then((r) => setProduct(r.data.data.product)).catch((e) => setError(errorMessage(e))) }, [id])
+  if (error) return <div className="container-app py-20 text-center text-red-700">{error}</div>; if (!product) return <Spinner full/>
+  const add = () => { dispatch(addToCart({ product, quantity })); toast.success('Added to your bag') }
+  return <div className="container-app grid gap-10 py-10 lg:grid-cols-2 lg:gap-16"><div><div className="aspect-square overflow-hidden rounded-3xl bg-[#eeeae0]">{product.images[selected] ? <img className="h-full w-full object-cover" src={product.images[selected].url} alt={product.name}/> : <div className="grid h-full place-items-center text-black/35">No image</div>}</div>{product.images.length > 1 && <div className="mt-3 flex gap-3">{product.images.map((image, i) => <button key={image.publicId} onClick={() => setSelected(i)} className={`size-18 overflow-hidden rounded-xl ring-2 ${selected === i ? 'ring-forest' : 'ring-transparent'}`}><img className="h-full w-full object-cover" src={image.url}/></button>)}</div>}</div><div className="lg:py-8"><p className="text-xs font-bold uppercase tracking-[.2em] text-forest">{product.category.name}</p><h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">{product.name}</h1><div className="mt-5 flex items-center gap-3"><span className="text-2xl font-bold">{money(product.price)}</span>{product.compareAtPrice && <span className="text-lg text-black/35 line-through">{money(product.compareAtPrice)}</span>}</div><p className="mt-7 whitespace-pre-line leading-7 text-black/60">{product.description}</p><div className="mt-8 border-y border-black/8 py-6"><div className="flex flex-wrap items-center gap-4"><div className="flex items-center rounded-full border border-black/10 bg-white"><button className="p-3" onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus size={16}/></button><span className="w-8 text-center text-sm font-bold">{quantity}</span><button className="p-3" onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}><Plus size={16}/></button></div><button onClick={add} disabled={!product.stock} className="btn-primary flex-1 sm:flex-none"><ShoppingBag size={18}/>{product.stock ? 'Add to bag' : 'Out of stock'}</button></div><p className="mt-3 text-xs text-black/45">{product.stock > 0 ? `${product.stock} available` : 'Currently unavailable'}</p></div><div className="mt-6 flex items-center gap-3 text-sm text-black/55"><ShieldCheck className="text-forest" size={20}/> Secure payment and order tracking included.</div></div></div>
+}

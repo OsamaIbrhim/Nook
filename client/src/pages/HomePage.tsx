@@ -1,0 +1,15 @@
+import { ArrowRight, ShieldCheck, Sparkles, Truck } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { api } from '../api/client'
+import { ProductCard } from '../components/ProductCard'
+import type { ApiResponse, Product } from '../types'
+export function HomePage() {
+  const [products, setProducts] = useState<Product[]>([])
+  useEffect(() => { api.get<ApiResponse<{ products: Product[] }>>('/products?limit=4').then((r) => setProducts(r.data.data.products)).catch(() => {}) }, [])
+  return <>
+    <section className="container-app py-6 sm:py-10"><div className="relative overflow-hidden rounded-[2rem] bg-[#dfeadf] px-6 py-16 sm:px-12 sm:py-24 lg:px-20"><div className="relative z-10 max-w-xl"><span className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/65 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-forest"><Sparkles size={14}/> New season</span><h1 className="text-4xl font-black leading-[1.03] tracking-tight sm:text-6xl">Small comforts.<br/>Beautifully made.</h1><p className="mt-6 max-w-md text-base leading-7 text-black/60">A considered collection of home, desk, and everyday objects designed to make ordinary moments feel special.</p><Link to="/products" className="btn-primary mt-8">Explore the collection <ArrowRight size={17}/></Link></div><div className="absolute -bottom-25 -right-20 size-96 rounded-full bg-[#b8d6c2]"/><div className="absolute right-30 top-15 hidden size-52 rotate-12 rounded-[3rem] bg-[#f4c9ac] shadow-2xl lg:block"/><div className="absolute right-15 top-40 hidden size-50 -rotate-8 rounded-full bg-[#f6f1e5] shadow-xl lg:block"/></div></section>
+    <section className="container-app py-14"><div className="mb-8 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-forest">Fresh finds</p><h2 className="mt-2 text-3xl font-black tracking-tight">New to the nook</h2></div><Link to="/products" className="hidden items-center gap-2 text-sm font-semibold text-forest sm:flex">Shop all <ArrowRight size={16}/></Link></div><div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">{products.map((p) => <ProductCard product={p} key={p._id}/>)}</div></section>
+    <section className="container-app py-8"><div className="grid gap-4 rounded-3xl border border-black/5 bg-white p-6 sm:grid-cols-3 sm:p-9">{[[Truck,'Easy delivery','Clear order tracking from checkout to your door.'],[ShieldCheck,'Secure checkout','Payments are protected and processed by Stripe.'],[Sparkles,'Chosen with care','Useful, beautiful pieces designed to last.']].map(([Icon,title,text]) => { const I = Icon as typeof Truck; return <div className="flex gap-4 p-3" key={title as string}><div className="grid size-11 shrink-0 place-items-center rounded-full bg-mint text-forest"><I size={20}/></div><div><h3 className="font-bold">{title as string}</h3><p className="mt-1 text-sm leading-6 text-black/50">{text as string}</p></div></div>})}</div></section>
+  </>
+}
