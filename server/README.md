@@ -41,7 +41,7 @@ Populate the store with safe demo data:
 npm run seed
 ```
 
-The seed is repeatable and creates 4 categories, 16 products, 4 users, and 6 orders covering different payment/fulfillment states. It only replaces records owned by the demo users, leaving other store data intact.
+The seed is repeatable and creates 4 categories, 15 richly specified products with locally verified imagery, 4 users, and 6 orders covering different payment/fulfillment states. It only replaces records owned by the demo users, leaving other store data intact.
 
 Demo credentials:
 

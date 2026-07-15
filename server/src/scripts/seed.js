@@ -15,27 +15,27 @@ const categories = [
 ]
 
 const catalog = [
-  ['Ripple Ceramic Mug', 'Home', 24, 32, 'A hand-finished stoneware mug with a softly rippled surface and comfortable handle.', 'photo-1514228742587-6b1558fcca3d'],
-  ['Linen Table Runner', 'Kitchen', 38, 18, 'Washed natural linen with a relaxed drape for everyday meals and special gatherings.', 'photo-1603199506016-b9a594b593c0'],
-  ['Oak Desk Tray', 'Workspace', 42, 14, 'A solid oak catchall that keeps pens, notes, and small essentials beautifully organized.', 'photo-1494438639946-1ebd1d20bf85'],
-  ['Calm Soy Candle', 'Wellness', 28, 25, 'A clean-burning soy candle with cedar, bergamot, and soft herbal notes.', 'photo-1602874801006-e26c8e9eafbd'],
-  ['Woven Market Basket', 'Home', 56, 9, 'A sturdy handwoven basket for market mornings, blankets, or everyday storage.', 'photo-1590874103328-eac38a683ce7'],
-  ['Glass Carafe Set', 'Kitchen', 48, 16, 'Lightweight borosilicate glass carafe with two matching tumblers.', 'photo-1523362628745-0c100150b504'],
-  ['Minimal Weekly Planner', 'Workspace', 18, 40, 'An undated weekly planner with generous space and smooth recycled paper.', 'photo-1506784983877-45594efa4cbe'],
-  ['Botanical Bath Soak', 'Wellness', 22, 30, 'Mineral-rich salts blended with lavender and dried botanicals.', 'photo-1608571423902-eed4a5ad8108'],
-  ['Bouclé Cushion', 'Home', 44, 12, 'A tactile neutral cushion with a feather-soft recycled fill.', 'photo-1586023492125-27b2c045efd7'],
-  ['Acacia Serving Board', 'Kitchen', 35, 21, 'Warm acacia wood shaped for bread, cheese, and shared snacks.', 'photo-1556911220-bff31c812dba'],
-  ['Brass Bookmark', 'Workspace', 14, 50, 'A slim brushed-brass page marker that develops a beautiful patina.', 'photo-1544947950-fa07a98d237f'],
-  ['Stone Incense Holder', 'Wellness', 19, 19, 'A weighty natural-stone holder with a minimal carved channel.', 'photo-1603006905003-be475563bc59'],
-  ['Speckled Bud Vase', 'Home', 26, 17, 'A small wheel-thrown vase for a single stem or tiny gathered arrangement.', 'photo-1610701596007-11502861dcfa'],
-  ['Cotton Tea Towels', 'Kitchen', 20, 35, 'A pair of absorbent yarn-dyed cotton towels in gentle earth tones.', 'photo-1556912167-f556f1f39fdf'],
-  ['Canvas Pencil Case', 'Workspace', 16, 27, 'Hard-wearing cotton canvas with a smooth brass zip and roomy interior.', 'photo-1455390582262-044cdead277a'],
-  ['Dry Body Brush', 'Wellness', 21, 22, 'Natural sisal bristles and an easy-grip beechwood handle.', 'photo-1556228578-8c89e6adf883']
+  ['Ripple Ceramic Mug', 'Home', 24, 32, 'A hand-finished stoneware mug with a softly rippled surface and comfortable handle.', '/products/ripple-ceramic-mug.jpg'],
+  ['Linen Table Runner', 'Kitchen', 38, 18, 'Washed natural linen with a relaxed drape for everyday meals and special gatherings.', '/products/linen-table-runner.jpg'],
+  ['Oak Desk Tray', 'Workspace', 42, 14, 'A solid oak catchall that keeps pens, notes, and small essentials beautifully organized.', '/products/oak-desk-tray.jpg'],
+  ['Orbit Table Lamp', 'Home', 128, 11, 'A dimmable opal-glass table lamp that brings soft, glare-free light to a bedside, shelf, or reading corner.', '/products/orbit-table-lamp.jpg'],
+  ['Calm Soy Candle', 'Wellness', 28, 25, 'A clean-burning soy candle with cedar, bergamot, and soft herbal notes.', '/products/calm-soy-candle.jpg'],
+  ['Woven Market Basket', 'Home', 56, 9, 'A sturdy handwoven basket for market mornings, blankets, or everyday storage.', '/products/woven-market-basket.jpg'],
+  ['Glass Carafe Set', 'Kitchen', 48, 16, 'Lightweight borosilicate glass carafe with two matching tumblers.', '/products/glass-carafe-set.jpg'],
+  ['Minimal Weekly Planner', 'Workspace', 18, 40, 'An undated weekly planner with generous space and smooth recycled paper.', '/products/minimal-weekly-planner.jpg'],
+  ['Botanical Bath Soak', 'Wellness', 22, 30, 'Mineral-rich salts blended with lavender and dried botanicals.', '/products/botanical-bath-soak.jpg'],
+  ['Bouclé Cushion', 'Home', 44, 12, 'A tactile neutral cushion with a feather-soft recycled fill.', '/products/boucle-cushion.jpg'],
+  ['Acacia Serving Board', 'Kitchen', 35, 21, 'Warm acacia wood shaped for bread, cheese, and shared snacks.', '/products/acacia-serving-board.jpg'],
+  ['Brass Bookmark', 'Workspace', 14, 50, 'A slim brushed-brass page marker that develops a beautiful patina.', '/products/brass-bookmark.jpg'],
+  ['Stone Incense Holder', 'Wellness', 19, 19, 'A weighty natural-stone holder with a minimal carved channel.', '/products/stone-incense-holder.jpg'],
+  ['Speckled Bud Vase', 'Home', 26, 17, 'A small wheel-thrown vase for a single stem or tiny gathered arrangement.', '/products/speckled-bud-vase.jpg'],
+  ['Cotton Tea Towels', 'Kitchen', 20, 35, 'A pair of absorbent yarn-dyed cotton towels in gentle earth tones.', '/products/cotton-tea-towels.jpg'],
 ]
 
 const seedEmails = ['admin@nook.test', 'maya@nook.test', 'omar@nook.test', 'lina@nook.test']
 
 function imageUrl(photoId) {
+  if (photoId.startsWith('/')) return photoId
   return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=900&q=80`
 }
 
@@ -68,18 +68,52 @@ async function seed() {
     )
   }
 
-  const products = await Product.create(catalog.map(([name, category, price, stock, description, photoId], index) => ({
-    name,
-    slug: slugify(name),
-    description,
-    price,
-    compareAtPrice: index % 4 === 0 ? Number(price) + 10 : undefined,
-    stock,
-    category: categoryDocs[category]._id,
-    images: [{ url: imageUrl(photoId), publicId: `demo/${slugify(name)}`, alt: name }],
-    isActive: true,
-    createdBy: admin._id
-  })))
+  const specifications = {
+    'Ripple Ceramic Mug': ['Glazed stoneware', '350 ml · 9 × 9.5 cm', 'Dishwasher safe', ['Comfortable rounded handle for slow mornings.', 'Tactile ripple glaze gives every mug subtle character.', 'Generous 350 ml capacity without feeling oversized.']],
+    'Linen Table Runner': ['100% European flax linen', '40 × 180 cm', 'Machine wash cold; line dry', ['Softens the table without formal styling.', 'Washed linen improves with every use.', 'Neutral tone works across everyday and occasion settings.']],
+    'Oak Desk Tray': ['FSC-certified solid oak', '30 × 18 × 2.5 cm', 'Wipe with a barely damp cloth', ['Gives pens, keys, notes, and cables one visible home.', 'Solid oak develops character instead of wearing out.', 'Compact footprint preserves usable desk space.']],
+    'Orbit Table Lamp': ['Opal glass and brushed brass', '28 × 28 × 34 cm', 'Dust with a soft dry cloth', ['Soft, glare-free light makes evenings calmer.', 'Inline dimmer adapts from reading to ambient light.', 'Compact sculptural form fits shelves and small tables.']],
+    'Calm Soy Candle': ['Soy wax, cotton wick, essential-oil fragrance', '240 g · 50-hour burn', 'Trim wick to 5 mm before lighting', ['Creates a warm cedar-and-bergamot atmosphere.', 'Clean soy wax burns slowly and evenly.', 'Reusable glass vessel keeps waste lower.']],
+    'Woven Market Basket': ['Handwoven seagrass', '42 × 24 × 30 cm', 'Spot clean and air dry', ['Carries market goods without disposable bags.', 'Structured weave doubles as open home storage.', 'Comfortable handles are built for everyday use.']],
+    'Glass Carafe Set': ['Heat-resistant borosilicate glass', '1 L carafe · two 250 ml tumblers', 'Dishwasher safe', ['Keeps water visible and within easy reach.', 'Lightweight glass is durable for daily use.', 'Matching tumblers stack neatly beside the carafe.']],
+    'Minimal Weekly Planner': ['FSC recycled paper and cotton cover', 'A5 · 160 pages', 'Keep dry', ['Undated pages remove the pressure of missed weeks.', 'One clear spread reduces planning clutter.', 'Smooth paper works with pencil, gel, and fountain pens.']],
+    'Botanical Bath Soak': ['Epsom salt, sea salt, lavender, chamomile', '400 g · approximately 8 baths', 'Store sealed in a dry place', ['Turns an ordinary bath into a calmer nightly ritual.', 'Mineral salts help tired bodies unwind.', 'Measured scoop keeps every use simple.']],
+    'Bouclé Cushion': ['Recycled bouclé cover and recycled fill', '45 × 45 cm', 'Removable cover; gentle wash', ['Adds softness and texture without loud color.', 'Supportive fill keeps its shape through daily use.', 'Neutral weave layers easily with existing furniture.']],
+    'Acacia Serving Board': ['FSC-certified acacia wood', '42 × 18 × 1.8 cm', 'Hand wash; oil occasionally', ['Moves easily from preparation to serving.', 'Dense acacia resists everyday knife marks.', 'Long handle makes sharing and carrying comfortable.']],
+    'Brass Bookmark': ['Brushed solid brass', '12 × 2.5 cm', 'Polish or allow a natural patina', ['Keeps a page without damaging the binding.', 'Slim profile disappears neatly inside a book.', 'Solid brass becomes more personal with use.']],
+    'Stone Incense Holder': ['Natural travertine stone', '24 × 4 × 2 cm', 'Wipe clean after use', ['Catches ash in one clean carved channel.', 'Weighty stone stays stable on narrow surfaces.', 'Each piece has naturally unique patterning.']],
+    'Speckled Bud Vase': ['Hand-glazed stoneware', '8 × 8 × 15 cm', 'Hand wash recommended', ['Makes a single stem feel intentional.', 'Small footprint fits shelves and bedside tables.', 'Hand-applied glaze makes each vase subtly unique.']],
+    'Cotton Tea Towels': ['100% yarn-dyed cotton', 'Set of 2 · 50 × 70 cm each', 'Machine wash warm', ['Absorbent weave handles real kitchen work.', 'Yarn-dyed color stays richer through washing.', 'Hanging loop keeps towels within easy reach.']],
+  }
+  const products = await Product.create(catalog.map(([name, category, price, stock, shortDescription, photoId], index) => {
+    const [material, dimensions, care, benefits] = specifications[name]
+    const description = `${shortDescription} Selected by Nook for its honest materials, useful proportions, and ability to improve an everyday ritual without adding visual noise.`
+    
+    let seoDesc = `${shortDescription} Discover verified materials, dimensions, care details, secure checkout, and 30-day returns from Nook Objects.`
+    if (seoDesc.length > 170) seoDesc = seoDesc.substring(0, 167) + '...'
+
+    return {
+      name,
+      slug: slugify(name),
+      shortDescription,
+      description,
+      sku: `NOOK-${String(index + 1).padStart(3, '0')}`,
+      brand: 'Nook Objects',
+      material,
+      dimensions,
+      care,
+      benefits,
+      tags: [slugify(category), ...name.toLowerCase().split(' ').filter((word) => word.length > 3)],
+      seo: { title: `${name} — Curated ${category} Object`, description: seoDesc },
+      price,
+      compareAtPrice: index % 4 === 0 ? Number(price) + 10 : undefined,
+      stock,
+      category: categoryDocs[category]._id,
+      images: [{ url: imageUrl(photoId), publicId: `demo/${slugify(name)}`, alt: `${name} in ${material.toLowerCase()}` }],
+      isActive: true,
+      createdBy: admin._id
+    }
+  }))
 
   const address = { name: 'Maya Hassan', line1: '12 Garden Street', city: 'Cairo', state: 'Cairo', postalCode: '11511', country: 'EG', phone: '+201000000000' }
   const makeItems = (indexes) => indexes.map(([index, quantity]) => {
@@ -91,7 +125,7 @@ async function seed() {
     { user: maya, indexes: [[8, 1], [11, 2]], status: 'shipped', paymentStatus: 'paid', daysAgo: 4 },
     { user: omar, indexes: [[5, 1], [9, 1]], status: 'processing', paymentStatus: 'paid', daysAgo: 2 },
     { user: omar, indexes: [[2, 1]], status: 'delivered', paymentStatus: 'paid', daysAgo: 31 },
-    { user: lina, indexes: [[3, 2], [15, 1]], status: 'pending', paymentStatus: 'unpaid', daysAgo: 0 },
+    { user: lina, indexes: [[3, 2], [14, 1]], status: 'pending', paymentStatus: 'unpaid', daysAgo: 0 },
     { user: lina, indexes: [[1, 1], [12, 2]], status: 'cancelled', paymentStatus: 'failed', daysAgo: 9 }
   ]
 

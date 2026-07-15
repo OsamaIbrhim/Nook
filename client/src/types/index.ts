@@ -3,7 +3,9 @@ export type User = { _id: string; name: string; email: string; role: Role; isAct
 export type Category = { _id: string; name: string; slug: string; description?: string }
 export type ProductImage = { url: string; publicId: string; alt: string }
 export type Product = {
-  _id: string; name: string; slug: string; description: string; price: number; compareAtPrice?: number
+  _id: string; name: string; slug: string; description: string; shortDescription?: string; sku?: string
+  brand?: string; material?: string; dimensions?: string; care?: string; benefits?: string[]; tags?: string[]
+  seo?: { title?: string; description?: string }; price: number; compareAtPrice?: number
   stock: number; category: Category; images: ProductImage[]; isActive: boolean; createdAt: string
 }
 export type CartItem = { product: Product; quantity: number }

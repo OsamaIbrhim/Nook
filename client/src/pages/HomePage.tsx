@@ -1,11 +1,13 @@
-import { ArrowDownRight, ArrowRight, MoveUpRight, Sparkles } from 'lucide-react'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { ArrowRight, MoveUpRight } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 
-const HeroScene = lazy(() => import('../components/HeroScene').then((module) => ({ default: module.HeroScene })))
+import { OutcomeHero } from '../components/OutcomeHero'
 import { ProductCard } from '../components/ProductCard'
 import { ProductGridSkeleton } from '../components/Skeletons'
+import { Seo } from '../components/Seo'
+import { siteUrl } from '../utils/site'
 import type { ApiResponse, Product } from '../types'
 
 const categories = [
@@ -24,34 +26,15 @@ export function HomePage() {
       .finally(() => setLoading(false))
   }, [])
 
+  const homeSchema = [
+    { '@context': 'https://schema.org', '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: 'Nook Objects', url: siteUrl, logo: `${siteUrl}/favicon.svg` },
+    { '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${siteUrl}/#website`, url: siteUrl, name: 'Nook Objects', publisher: { '@id': `${siteUrl}/#organization` }, potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: `${siteUrl}/products?search={search_term_string}` }, 'query-input': 'required name=search_term_string' } }
+  ]
   return <div className="overflow-hidden bg-[#090909] text-[#f3f1e9]">
-    <section className="relative min-h-[760px] h-[100svh] overflow-hidden border-b border-white/12">
-      <Suspense fallback={<div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_40%,#25251f_0%,#090909_65%)]"/>}><HeroScene/></Suspense>
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_55%_45%,transparent_0%,rgba(9,9,9,.12)_45%,rgba(9,9,9,.7)_100%)]"/>
-      <div className="container-app relative z-[2] flex h-full flex-col justify-end pb-20 pt-32 sm:pb-14">
-        <div className="mb-auto flex items-start justify-between pt-12 text-[10px] font-semibold uppercase tracking-[.22em] text-white/55 sm:pt-16">
-          <p>Interactive commerce<br/>Cairo — Worldwide</p>
-          <p className="hidden text-right sm:block">Curated objects<br/>Edition 001 / 2026</p>
-        </div>
-        <div className="grid items-end gap-8 lg:grid-cols-[1fr_280px]">
-          <div>
-            <p className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[.24em] text-[#d7ff39]"><Sparkles size={14}/> Nook digital atelier</p>
-            <h1 className="max-w-5xl text-[clamp(4rem,10vw,9.5rem)] font-black leading-[.78] tracking-[-.075em]">
-              OBJECTS<br/><span className="ml-[12vw] font-light italic text-white/90">WITH A</span><br/>PULSE.
-            </h1>
-          </div>
-          <div className="pointer-events-auto pb-1 lg:pb-4">
-            <p className="max-w-xs text-sm leading-6 text-white/58">A living collection of tactile objects—selected for the way they feel, function, and transform a space.</p>
-            <Link to="/products" className="mt-6 inline-flex size-24 items-center justify-center rounded-full bg-[#d7ff39] text-black transition duration-500 hover:rotate-12 hover:scale-105 sm:size-28" aria-label="Enter the collection"><ArrowDownRight size={32}/></Link>
-          </div>
-        </div>
-      </div>
-      <div className="absolute bottom-0 z-[3] flex w-max animate-marquee border-t border-white/12 py-3 text-[10px] font-bold uppercase tracking-[.35em] text-white/45">
-        {Array.from({ length: 8 }, (_, index) => <span className="mx-8" key={index}>Material stories • functional art • considered living</span>)}
-      </div>
-    </section>
+    <Seo description="Shop a tightly curated collection of useful, distinctive objects for home, kitchen, workspace, and everyday wellness. Clear materials and straightforward returns." jsonLd={homeSchema}/>
+    <OutcomeHero/>
 
-    <section className="bg-[#f2efe6] px-4 py-24 text-[#0a0a0a] sm:px-6 sm:py-36">
+    <section id="buying-standard" className="scroll-mt-28 bg-[#f2efe6] px-4 py-24 text-[#0a0a0a] sm:px-6 sm:py-36">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
           <p className="pt-2 text-xs font-bold uppercase tracking-[.22em]">[ Our point of view ]</p>

@@ -10,6 +10,18 @@ const productSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true, maxlength: 160 },
   slug: { type: String, required: true, unique: true, lowercase: true, index: true },
   description: { type: String, required: true, trim: true, maxlength: 5000 },
+  shortDescription: { type: String, trim: true, maxlength: 240 },
+  sku: { type: String, unique: true, sparse: true, uppercase: true, trim: true, index: true },
+  brand: { type: String, default: 'Nook Objects', trim: true },
+  material: { type: String, trim: true, maxlength: 240 },
+  dimensions: { type: String, trim: true, maxlength: 240 },
+  care: { type: String, trim: true, maxlength: 500 },
+  benefits: [{ type: String, trim: true, maxlength: 180 }],
+  tags: [{ type: String, lowercase: true, trim: true }],
+  seo: {
+    title: { type: String, trim: true, maxlength: 70 },
+    description: { type: String, trim: true, maxlength: 170 }
+  },
   price: { type: Number, required: true, min: 0 },
   compareAtPrice: { type: Number, min: 0 },
   stock: { type: Number, required: true, min: 0, default: 0 },

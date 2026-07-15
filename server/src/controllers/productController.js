@@ -7,6 +7,12 @@ import { uploadBuffer, deleteCloudinaryImages } from '../utils/upload.js';
 import { requireFields, assertObjectId, parsePositiveInt } from '../validators/common.js';
 
 const parseBool = (value) => value === true || value === 'true';
+const parseArray = (value, label) => {
+  if (value === undefined) return undefined;
+  if (Array.isArray(value)) return value;
+  try { const parsed = JSON.parse(value); if (Array.isArray(parsed)) return parsed; } catch { /* handled below */ }
+  throw new ApiError(400, `${label} must be a JSON array`);
+};
 const asNumber = (value, label) => { const n = Number(value); if (!Number.isFinite(n) || n < 0) throw new ApiError(400, `${label} must be a non-negative number`); return n; };
 
 export const listProducts = asyncHandler(async (req, res) => {
@@ -53,6 +59,10 @@ export const createProduct = asyncHandler(async (req, res) => {
   try {
     const product = await Product.create({
       name: req.body.name, slug: slugify(req.body.name), description: req.body.description,
+      shortDescription: req.body.shortDescription, sku: req.body.sku, brand: req.body.brand,
+      material: req.body.material, dimensions: req.body.dimensions, care: req.body.care,
+      benefits: parseArray(req.body.benefits, 'benefits'), tags: parseArray(req.body.tags, 'tags'),
+      seo: { title: req.body.seoTitle, description: req.body.seoDescription },
       price: asNumber(req.body.price, 'price'), compareAtPrice: req.body.compareAtPrice ? asNumber(req.body.compareAtPrice, 'compareAtPrice') : undefined,
       stock: asNumber(req.body.stock, 'stock'), category: req.body.category, images,
       isActive: req.body.isActive === undefined ? true : parseBool(req.body.isActive), createdBy: req.user.id
@@ -75,7 +85,12 @@ export const updateProduct = asyncHandler(async (req, res) => {
   }
   const oldToDelete = product.images.filter((image) => removable.includes(image.publicId));
   product.images = [...product.images.filter((image) => !removable.includes(image.publicId)), ...newImages];
-  for (const key of ['name', 'description', 'category']) if (req.body[key] !== undefined) product[key] = req.body[key];
+  for (const key of ['name', 'description', 'shortDescription', 'sku', 'brand', 'material', 'dimensions', 'care', 'category']) if (req.body[key] !== undefined) product[key] = req.body[key];
+  if (req.body.benefits !== undefined) product.benefits = parseArray(req.body.benefits, 'benefits');
+  if (req.body.tags !== undefined) product.tags = parseArray(req.body.tags, 'tags');
+  if (!product.seo) product.seo = {};
+  if (req.body.seoTitle !== undefined) product.seo.title = req.body.seoTitle;
+  if (req.body.seoDescription !== undefined) product.seo.description = req.body.seoDescription;
   if (req.body.name) product.slug = slugify(req.body.name);
   for (const key of ['price', 'compareAtPrice', 'stock']) if (req.body[key] !== undefined) product[key] = asNumber(req.body[key], key);
   if (req.body.isActive !== undefined) product.isActive = parseBool(req.body.isActive);

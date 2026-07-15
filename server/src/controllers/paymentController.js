@@ -26,7 +26,7 @@ export const createCheckoutSession = asyncHandler(async (req, res) => {
   const session = await stripeClient().checkout.sessions.create({
     mode: 'payment',
     customer_email: req.user.email,
-    line_items: order.items.map((item) => ({ price_data: { currency: order.currency, product_data: { name: item.name, ...(item.image && { images: [item.image] }) }, unit_amount: Math.round(item.unitPrice * 100) }, quantity: item.quantity })),
+    line_items: order.items.map((item) => ({ price_data: { currency: order.currency, product_data: { name: item.name, ...(item.image && { images: [item.image.startsWith('http') ? item.image : new URL(item.image, env.clientUrl.split(',')[0]).toString()] }) }, unit_amount: Math.round(item.unitPrice * 100) }, quantity: item.quantity })),
     metadata: { orderId: order.id, userId: req.user.id },
     payment_intent_data: { metadata: { orderId: order.id } },
     success_url: `${env.clientUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,

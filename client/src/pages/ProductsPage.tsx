@@ -5,6 +5,7 @@ import { api, errorMessage } from '../api/client'
 import { PageError } from '../components/PageError'
 import { Pagination } from '../components/Pagination'
 import { ProductCard } from '../components/ProductCard'
+import { SelectMenu } from '../components/SelectMenu'
 import { ProductGridSkeleton } from '../components/Skeletons'
 import type { ApiResponse, Category, Pagination as PaginationType, Product } from '../types'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
@@ -64,8 +65,8 @@ export function ProductsPage() {
     </div>
     <div className="mb-8 grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5 sm:grid-cols-4">
       <div className="relative sm:col-span-2"><SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 text-black/35" size={17}/><input aria-label="Search products" className="field !pl-10" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search the collection"/></div>
-      <select aria-label="Product category" className="field" value={params.get('category') || ''} onChange={(event) => update('category', event.target.value)}><option value="">All categories</option>{categories.map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select>
-      <select aria-label="Sort products" className="field" value={params.get('sort') || 'newest'} onChange={(event) => update('sort', event.target.value)}><option value="newest">Newest</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option><option value="name">Name</option></select>
+      <SelectMenu label="Category" value={params.get('category') || ''} onChange={(value) => update('category', value)} options={[{ value: '', label: 'All categories' }, ...categories.map((category) => ({ value: category._id, label: category.name }))]}/>
+      <SelectMenu label="Sort" value={params.get('sort') || 'newest'} onChange={(value) => update('sort', value)} options={[{ value: 'newest', label: 'Newest first' }, { value: 'price_asc', label: 'Price: low to high' }, { value: 'price_desc', label: 'Price: high to low' }, { value: 'name', label: 'Name A–Z' }]}/>
     </div>
     {loading ? <ProductGridSkeleton/> : error ? <PageError message={error} retry={() => window.location.reload()}/> : products.length ? <>
       <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">{products.map((product) => <ProductCard key={product._id} product={product}/>)}</div>
