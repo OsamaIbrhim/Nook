@@ -2,6 +2,10 @@
 
 React + TypeScript + Tailwind frontend for the e-commerce API in `../server`.
 
+## Immersive design system
+
+The storefront uses an original, editorial WebGL direction inspired by immersive creative-studio sites rather than copying any one website. The homepage includes a pointer-reactive Three.js sculpture, adaptive device pixel ratio, floating satellite objects, dynamic lighting, oversized typography, kinetic marquee, staggered product editorial, and high-contrast collection navigation. The Three.js scene is lazy-loaded so normal commerce routes do not pay its initial download cost.
+
 ## Included
 
 - Responsive storefront, product search/filter/sort, product details, persistent Redux cart

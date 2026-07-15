@@ -13,7 +13,14 @@ export const listProducts = asyncHandler(async (req, res) => {
   const page = parsePositiveInt(req.query.page, 1);
   const limit = parsePositiveInt(req.query.limit, 12, 100);
   const filter = { isActive: true };
-  if (req.query.category) filter.category = req.query.category;
+  if (req.query.category) {
+    const value = String(req.query.category);
+    if (/^[a-f\d]{24}$/i.test(value)) filter.category = value;
+    else {
+      const category = await Category.findOne({ slug: slugify(value) }).select('_id').lean();
+      filter.category = category?._id || null;
+    }
+  }
   if (req.query.minPrice || req.query.maxPrice) {
     filter.price = {};
     if (req.query.minPrice) filter.price.$gte = asNumber(req.query.minPrice, 'minPrice');

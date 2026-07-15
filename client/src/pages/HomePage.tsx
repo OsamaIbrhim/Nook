@@ -1,15 +1,85 @@
-import { ArrowRight, ShieldCheck, Sparkles, Truck } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ArrowDownRight, ArrowRight, MoveUpRight, Sparkles } from 'lucide-react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
+
+const HeroScene = lazy(() => import('../components/HeroScene').then((module) => ({ default: module.HeroScene })))
 import { ProductCard } from '../components/ProductCard'
+import { ProductGridSkeleton } from '../components/Skeletons'
 import type { ApiResponse, Product } from '../types'
+
+const categories = [
+  { index: '01', name: 'Objects for home', caption: 'Form, texture, atmosphere', query: 'Home' },
+  { index: '02', name: 'Kitchen rituals', caption: 'Gather, prepare, share', query: 'Kitchen' },
+  { index: '03', name: 'Workspace tools', caption: 'Focus without friction', query: 'Workspace' },
+  { index: '04', name: 'Everyday wellness', caption: 'Slow down, tune in', query: 'Wellness' }
+]
+
 export function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
-  useEffect(() => { api.get<ApiResponse<{ products: Product[] }>>('/products?limit=4').then((r) => setProducts(r.data.data.products)).catch(() => {}) }, [])
-  return <>
-    <section className="container-app py-6 sm:py-10"><div className="relative overflow-hidden rounded-[2rem] bg-[#dfeadf] px-6 py-16 sm:px-12 sm:py-24 lg:px-20"><div className="relative z-10 max-w-xl"><span className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/65 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-forest"><Sparkles size={14}/> New season</span><h1 className="text-4xl font-black leading-[1.03] tracking-tight sm:text-6xl">Small comforts.<br/>Beautifully made.</h1><p className="mt-6 max-w-md text-base leading-7 text-black/60">A considered collection of home, desk, and everyday objects designed to make ordinary moments feel special.</p><Link to="/products" className="btn-primary mt-8">Explore the collection <ArrowRight size={17}/></Link></div><div className="absolute -bottom-25 -right-20 size-96 rounded-full bg-[#b8d6c2]"/><div className="absolute right-30 top-15 hidden size-52 rotate-12 rounded-[3rem] bg-[#f4c9ac] shadow-2xl lg:block"/><div className="absolute right-15 top-40 hidden size-50 -rotate-8 rounded-full bg-[#f6f1e5] shadow-xl lg:block"/></div></section>
-    <section className="container-app py-14"><div className="mb-8 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-forest">Fresh finds</p><h2 className="mt-2 text-3xl font-black tracking-tight">New to the nook</h2></div><Link to="/products" className="hidden items-center gap-2 text-sm font-semibold text-forest sm:flex">Shop all <ArrowRight size={16}/></Link></div><div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">{products.map((p) => <ProductCard product={p} key={p._id}/>)}</div></section>
-    <section className="container-app py-8"><div className="grid gap-4 rounded-3xl border border-black/5 bg-white p-6 sm:grid-cols-3 sm:p-9">{[[Truck,'Easy delivery','Clear order tracking from checkout to your door.'],[ShieldCheck,'Secure checkout','Payments are protected and processed by Stripe.'],[Sparkles,'Chosen with care','Useful, beautiful pieces designed to last.']].map(([Icon,title,text]) => { const I = Icon as typeof Truck; return <div className="flex gap-4 p-3" key={title as string}><div className="grid size-11 shrink-0 place-items-center rounded-full bg-mint text-forest"><I size={20}/></div><div><h3 className="font-bold">{title as string}</h3><p className="mt-1 text-sm leading-6 text-black/50">{text as string}</p></div></div>})}</div></section>
-  </>
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    api.get<ApiResponse<{ products: Product[] }>>('/products?limit=4')
+      .then((response) => setProducts(response.data.data.products))
+      .finally(() => setLoading(false))
+  }, [])
+
+  return <div className="overflow-hidden bg-[#090909] text-[#f3f1e9]">
+    <section className="relative min-h-[760px] h-[100svh] overflow-hidden border-b border-white/12">
+      <Suspense fallback={<div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_40%,#25251f_0%,#090909_65%)]"/>}><HeroScene/></Suspense>
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_55%_45%,transparent_0%,rgba(9,9,9,.12)_45%,rgba(9,9,9,.7)_100%)]"/>
+      <div className="container-app relative z-[2] flex h-full flex-col justify-end pb-20 pt-32 sm:pb-14">
+        <div className="mb-auto flex items-start justify-between pt-12 text-[10px] font-semibold uppercase tracking-[.22em] text-white/55 sm:pt-16">
+          <p>Interactive commerce<br/>Cairo — Worldwide</p>
+          <p className="hidden text-right sm:block">Curated objects<br/>Edition 001 / 2026</p>
+        </div>
+        <div className="grid items-end gap-8 lg:grid-cols-[1fr_280px]">
+          <div>
+            <p className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[.24em] text-[#d7ff39]"><Sparkles size={14}/> Nook digital atelier</p>
+            <h1 className="max-w-5xl text-[clamp(4rem,10vw,9.5rem)] font-black leading-[.78] tracking-[-.075em]">
+              OBJECTS<br/><span className="ml-[12vw] font-light italic text-white/90">WITH A</span><br/>PULSE.
+            </h1>
+          </div>
+          <div className="pointer-events-auto pb-1 lg:pb-4">
+            <p className="max-w-xs text-sm leading-6 text-white/58">A living collection of tactile objects—selected for the way they feel, function, and transform a space.</p>
+            <Link to="/products" className="mt-6 inline-flex size-24 items-center justify-center rounded-full bg-[#d7ff39] text-black transition duration-500 hover:rotate-12 hover:scale-105 sm:size-28" aria-label="Enter the collection"><ArrowDownRight size={32}/></Link>
+          </div>
+        </div>
+      </div>
+      <div className="absolute bottom-0 z-[3] flex w-max animate-marquee border-t border-white/12 py-3 text-[10px] font-bold uppercase tracking-[.35em] text-white/45">
+        {Array.from({ length: 8 }, (_, index) => <span className="mx-8" key={index}>Material stories • functional art • considered living</span>)}
+      </div>
+    </section>
+
+    <section className="bg-[#f2efe6] px-4 py-24 text-[#0a0a0a] sm:px-6 sm:py-36">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
+          <p className="pt-2 text-xs font-bold uppercase tracking-[.22em]">[ Our point of view ]</p>
+          <div>
+            <h2 className="text-[clamp(3.2rem,7.2vw,7.4rem)] font-semibold leading-[.93] tracking-[-.055em]">Things should do more than <span className="font-light italic text-black/35">exist.</span> They should change how a moment feels.</h2>
+            <div className="mt-12 flex flex-col items-start justify-between gap-6 border-t border-black/20 pt-6 sm:flex-row sm:items-end"><p className="max-w-md text-sm leading-6 text-black/55">Nook brings gallery-level curation to everyday commerce. No noise. No endless aisles. Just objects with purpose, presence, and a story worth keeping.</p><Link to="/products" className="group flex items-center gap-3 text-sm font-bold uppercase tracking-widest">Enter the archive <span className="grid size-11 place-items-center rounded-full border border-black transition group-hover:bg-black group-hover:text-white"><ArrowRight size={17}/></span></Link></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section className="bg-[#090909] py-24 sm:py-32">
+      <div className="container-app">
+        <div className="mb-12 flex items-end justify-between border-b border-white/15 pb-6"><div><p className="text-xs font-bold uppercase tracking-[.25em] text-[#d7ff39]">Drop 001</p><h2 className="mt-2 text-4xl font-black tracking-[-.04em] sm:text-6xl">SELECTED OBJECTS</h2></div><Link to="/products" className="hidden items-center gap-2 text-xs font-bold uppercase tracking-widest sm:flex">View all <MoveUpRight size={17}/></Link></div>
+        <div className="text-[#0a0a0a]">{loading ? <ProductGridSkeleton count={4}/> : <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">{products.map((product, index) => <div className={index % 2 ? 'sm:mt-16' : ''} key={product._id}><ProductCard product={product}/></div>)}</div>}</div>
+      </div>
+    </section>
+
+    <section className="bg-[#6d63ff] py-24 text-black sm:py-32">
+      <div className="container-app">
+        <div className="mb-14 flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-[.24em]">Explore by atmosphere</p><p className="text-xs font-bold">04 / WORLDS</p></div>
+        <div className="divide-y divide-black/30 border-y border-black/30">{categories.map((category) => <Link key={category.index} to={`/products?category=${category.query.toLowerCase()}`} className="group grid grid-cols-[50px_1fr_auto] items-center gap-3 py-6 transition hover:px-3 sm:grid-cols-[90px_1fr_240px_auto] sm:py-9"><span className="font-mono text-xs">{category.index}</span><span className="text-3xl font-black uppercase tracking-[-.04em] sm:text-6xl">{category.name}</span><span className="hidden text-sm text-black/55 sm:block">{category.caption}</span><span className="grid size-11 place-items-center rounded-full border border-black transition group-hover:-rotate-45 group-hover:bg-black group-hover:text-white"><ArrowRight size={18}/></span></Link>)}</div>
+      </div>
+    </section>
+
+    <section className="relative grid min-h-[70vh] place-items-center overflow-hidden bg-[#ff5c35] px-4 py-24 text-center text-black">
+      <div className="absolute left-[-8rem] top-[-8rem] size-72 rounded-full border-[40px] border-black/10 sm:size-96"/><div className="absolute bottom-[-4rem] right-[8%] size-48 rotate-45 bg-[#d7ff39] opacity-70"/>
+      <div className="relative z-10"><p className="text-xs font-bold uppercase tracking-[.25em]">Your space is waiting</p><h2 className="mt-5 text-[clamp(3.6rem,9vw,9rem)] font-black leading-[.82] tracking-[-.07em]">FIND YOUR<br/>NEXT OBJECT.</h2><Link to="/products" className="mt-10 inline-flex items-center gap-3 rounded-full bg-black px-7 py-4 text-sm font-bold uppercase tracking-widest text-white transition hover:scale-105">Shop the collection <ArrowRight size={18}/></Link></div>
+    </section>
+  </div>
 }
