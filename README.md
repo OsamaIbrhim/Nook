@@ -54,4 +54,4 @@ To create a separate administrator:
 npm run create-admin -- "Store Admin" admin@example.com "secure-password"
 ```
 
-See each project's README for endpoint, Stripe, Cloudinary, and deployment details.
+See each project's README for endpoint, Stripe, and Cloudinary details. For automated CI and frontend deployment, follow [`GITHUB_DEPLOYMENT.md`](GITHUB_DEPLOYMENT.md); the workflow is stored in `.github/workflows/pages.yml`.

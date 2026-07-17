@@ -10,6 +10,7 @@ import { Spinner } from '../components/Spinner'
 import { addToCart } from '../features/cart/cartSlice'
 import type { ApiResponse, Product } from '../types'
 import { money } from '../utils/format'
+import { absoluteMediaUrl, mediaUrl } from '../utils/media'
 
 export function ProductDetailPage() {
   const { id } = useParams()
@@ -37,7 +38,7 @@ export function ProductDetailPage() {
       '@id': `${siteUrl}${path}#product`,
       name: product.name,
       description,
-      image: product.images.map((image) => image.url),
+      image: product.images.map((image) => absoluteMediaUrl(image.url)),
       sku: product.sku,
       brand: { '@type': 'Brand', name: product.brand || 'Nook Objects' },
       material: product.material,
@@ -72,14 +73,14 @@ export function ProductDetailPage() {
   }
 
   return <>
-    <Seo title={product.seo?.title || product.name} description={description} path={path} image={product.images[0]?.url} type="product" jsonLd={productSchema}/>
+    <Seo title={product.seo?.title || product.name} description={description} path={path} image={absoluteMediaUrl(product.images[0]?.url)} type="product" jsonLd={productSchema}/>
     <main className="bg-[#f2efe6] pb-24 text-black lg:pb-16">
       <div className="container-app py-6 sm:py-10">
         <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.16em] text-black/45"><Link to="/products">Collection</Link><span>/</span><Link to={`/products?category=${product.category.slug}`}>{product.category.name}</Link><span>/</span><span className="truncate text-black">{product.name}</span></nav>
         <div className="grid gap-9 lg:grid-cols-[minmax(0,1.18fr)_minmax(380px,.82fr)] lg:gap-14">
           <section aria-label="Product images" className="min-w-0">
-            <div className="aspect-[4/5] overflow-hidden bg-[#dedbd2] sm:aspect-square">{product.images[selected] ? <img className="h-full w-full object-cover" src={product.images[selected].url} alt={product.images[selected].alt || `${product.name}, view ${selected + 1}`} width="1000" height="1000" fetchPriority="high"/> : <div className="grid h-full place-items-center text-sm uppercase tracking-widest text-black/35">Image coming soon</div>}</div>
-            {product.images.length > 1 && <div className="mt-3 grid grid-cols-5 gap-2">{product.images.map((image, index) => <button key={image.publicId} onClick={() => setSelected(index)} aria-label={`View image ${index + 1} of ${product.name}`} aria-current={selected === index} className={`aspect-square overflow-hidden border-2 transition ${selected === index ? 'border-black' : 'border-transparent opacity-65 hover:opacity-100'}`}><img className="h-full w-full object-cover" src={image.url} alt="" loading="lazy"/></button>)}</div>}
+            <div className="aspect-[4/5] overflow-hidden bg-[#dedbd2] sm:aspect-square">{product.images[selected] ? <img className="h-full w-full object-cover" src={mediaUrl(product.images[selected].url)} alt={product.images[selected].alt || `${product.name}, view ${selected + 1}`} width="1000" height="1000" fetchPriority="high"/> : <div className="grid h-full place-items-center text-sm uppercase tracking-widest text-black/35">Image coming soon</div>}</div>
+            {product.images.length > 1 && <div className="mt-3 grid grid-cols-5 gap-2">{product.images.map((image, index) => <button key={image.publicId} onClick={() => setSelected(index)} aria-label={`View image ${index + 1} of ${product.name}`} aria-current={selected === index} className={`aspect-square overflow-hidden border-2 transition ${selected === index ? 'border-black' : 'border-transparent opacity-65 hover:opacity-100'}`}><img className="h-full w-full object-cover" src={mediaUrl(image.url)} alt="" loading="lazy"/></button>)}</div>}
           </section>
 
           <section className="lg:sticky lg:top-32 lg:h-fit lg:py-2">

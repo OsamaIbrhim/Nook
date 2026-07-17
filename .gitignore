@@ -1,0 +1,24 @@
+# Dependencies and builds
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and editor files
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# Tool caches
+.cache/
+.vite/
+
+# Docs
+GITHUB_DEPLOYMENT.md
+ecommerce-redesign-blueprint.md

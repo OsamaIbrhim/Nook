@@ -1,11 +1,12 @@
 import { ArrowUpRight, Pause, Play } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { mediaUrl } from '../utils/media'
 
 const slides = [
-  { name: 'Ripple Ceramic Mug', category: 'Hand-finished stoneware', price: '$24', image: '/products/ripple-ceramic-mug.jpg', href: '/products/ripple-ceramic-mug', color: '#d7ff39' },
-  { name: 'Glass Carafe Set', category: 'Borosilicate glass / set of three', price: '$48', image: '/products/glass-carafe-set.jpg', href: '/products/glass-carafe-set', color: '#ff7047' },
-  { name: 'Oak Desk Tray', category: 'FSC-certified solid oak', price: '$42', image: '/products/oak-desk-tray.jpg', href: '/products/oak-desk-tray', color: '#8d7cff' }
+  { name: 'Ripple Ceramic Mug', category: 'Hand-finished stoneware', price: '$24', image: mediaUrl('/products/ripple-ceramic-mug.jpg'), href: '/products/ripple-ceramic-mug', color: '#d7ff39' },
+  { name: 'Glass Carafe Set', category: 'Borosilicate glass / set of three', price: '$48', image: mediaUrl('/products/glass-carafe-set.jpg'), href: '/products/glass-carafe-set', color: '#ff7047' },
+  { name: 'Oak Desk Tray', category: 'FSC-certified solid oak', price: '$42', image: mediaUrl('/products/oak-desk-tray.jpg'), href: '/products/oak-desk-tray', color: '#8d7cff' }
 ]
 
 export function HeroVisual() {

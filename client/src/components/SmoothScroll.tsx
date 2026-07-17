@@ -37,9 +37,21 @@ export function SmoothScroll() {
   }, [])
 
   useEffect(() => {
-    lenis.current?.scrollTo(0, { immediate: true })
-    if (!lenis.current) window.scrollTo({ top: 0, behavior: 'auto' })
+    const frame = requestAnimationFrame(() => {
+      lenis.current?.scrollTo(0, { immediate: true })
+      if (!lenis.current) window.scrollTo({ top: 0, behavior: 'auto' })
+    })
+    return () => cancelAnimationFrame(frame)
   }, [location.pathname])
+
+  useEffect(() => {
+    const scrollToTop = () => {
+      if (lenis.current) lenis.current.scrollTo(0, { duration: 0.85, force: true })
+      else window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    window.addEventListener('nook:scroll-top', scrollToTop)
+    return () => window.removeEventListener('nook:scroll-top', scrollToTop)
+  }, [])
 
   return <div className="pointer-events-none fixed inset-x-0 top-0 z-[90] h-[2px] origin-left bg-transparent"><div ref={progress} className="h-full origin-left scale-x-0 bg-[#d7ff39] will-change-transform"/></div>
 }

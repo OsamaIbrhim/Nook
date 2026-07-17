@@ -1,10 +1,9 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { useAppDispatch } from './app/hooks'
 import { NetworkBanner } from './components/NetworkBanner'
 import { AdminRoute, ProtectedRoute } from './components/RouteGuards'
-import { Spinner } from './components/Spinner'
 import { restoreSession, sessionExpired, tokenRefreshed } from './features/auth/authSlice'
 import { AdminLayout } from './layouts/AdminLayout'
 import { StoreLayout } from './layouts/StoreLayout'
@@ -55,8 +54,8 @@ const router = createBrowserRouter([
       { path: 'users', element: <UsersAdminPage/> }
     ] }]
   },
-  { path: '*', element: <div className="grid min-h-screen place-items-center bg-[#f2efe6] text-center"><div><p className="text-xs font-black uppercase tracking-[.2em]">Page not found</p><h1 className="text-8xl font-black tracking-[-.06em]">404</h1><a href="/" className="btn-primary mt-5">Back home</a></div></div> }
-])
+  { path: '*', element: <div className="grid min-h-screen place-items-center bg-[#f2efe6] text-center"><div><p className="text-xs font-black uppercase tracking-[.2em]">Page not found</p><h1 className="text-8xl font-black tracking-[-.06em]">404</h1><a href={import.meta.env.BASE_URL} className="btn-primary mt-5">Back home</a></div></div> }
+], { basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/' })
 
 export default function App() {
   const dispatch = useAppDispatch()
@@ -71,5 +70,5 @@ export default function App() {
       window.removeEventListener('auth:refreshed', refreshed)
     }
   }, [dispatch])
-  return <><Suspense fallback={<Spinner full/>}><RouterProvider router={router}/></Suspense><NetworkBanner/><Toaster richColors closeButton position="top-right"/></>
+  return <><RouterProvider router={router}/><NetworkBanner/><Toaster richColors closeButton position="top-right"/></>
 }

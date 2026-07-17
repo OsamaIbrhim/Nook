@@ -5,6 +5,7 @@ import { useAppDispatch } from '../app/hooks'
 import { addToCart } from '../features/cart/cartSlice'
 import type { Product } from '../types'
 import { money } from '../utils/format'
+import { mediaUrl } from '../utils/media'
 
 export function ProductCard({ product }: { product: Product }) {
   const dispatch = useAppDispatch()
@@ -14,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
   }
   return <article className="group relative">
     <Link to={`/products/${product.slug}`} className="relative block aspect-[4/5] overflow-hidden rounded-[2px] bg-[#d9d7cf]">
-      {product.images[0] ? <img src={product.images[0].url} alt={product.images[0].alt || product.name} className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04]"/> : <div className="grid h-full place-items-center text-xs uppercase tracking-widest text-black/35">Image pending</div>}
+      {product.images[0] ? <img src={mediaUrl(product.images[0].url)} alt={product.images[0].alt || product.name} className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04]"/> : <div className="grid h-full place-items-center text-xs uppercase tracking-widest text-black/35">Image pending</div>}
       <span className="absolute left-3 top-3 rounded-full bg-black/75 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.16em] text-white backdrop-blur">{product.stock ? 'Available' : 'Sold out'}</span>
       <button onClick={(event) => { event.preventDefault(); add() }} disabled={!product.stock} className="absolute bottom-3 right-3 grid size-11 translate-y-2 place-items-center rounded-full bg-[#d7ff39] text-black opacity-0 shadow-xl transition duration-300 hover:rotate-90 disabled:opacity-40 group-hover:translate-y-0 group-hover:opacity-100 focus:translate-y-0 focus:opacity-100" aria-label={`Add ${product.name} to cart`}><Plus size={20}/></button>
     </Link>

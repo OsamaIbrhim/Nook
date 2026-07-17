@@ -1,0 +1,131 @@
+name: CI and GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Test and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Test backend
+        working-directory: server
+        run: npm test
+
+      - name: Check backend entry point
+        working-directory: server
+        run: npm run check
+
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: client
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: client
+        env:
+          VITE_BASE_PATH: /
+          VITE_API_URL: http://localhost:5000/api/v1
+          VITE_SITE_URL: http://localhost:5173
+        run: npm run build
+
+  deploy:
+    name: Deploy frontend to GitHub Pages
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Build for the repository URL
+        working-directory: client
+        env:
+          CONFIGURED_API_URL: ${{ vars.VITE_API_URL }}
+          CONFIGURED_SITE_URL: ${{ vars.VITE_SITE_URL }}
+        run: |
+          if [ -z "$CONFIGURED_API_URL" ]; then
+            echo "::error::Create the repository variable VITE_API_URL with the public HTTPS URL of the deployed backend, ending in /api/v1."
+            exit 1
+          fi
+
+          REPOSITORY_NAME="${GITHUB_REPOSITORY#*/}"
+          OWNER_NAME="${GITHUB_REPOSITORY_OWNER}"
+
+          if [ "$REPOSITORY_NAME" = "${OWNER_NAME}.github.io" ]; then
+            BASE_PATH="/"
+            DEFAULT_SITE_URL="https://${OWNER_NAME}.github.io"
+          else
+            BASE_PATH="/${REPOSITORY_NAME}/"
+            DEFAULT_SITE_URL="https://${OWNER_NAME}.github.io/${REPOSITORY_NAME}"
+          fi
+
+          export VITE_BASE_PATH="$BASE_PATH"
+          export VITE_API_URL="$CONFIGURED_API_URL"
+          export VITE_SITE_URL="${CONFIGURED_SITE_URL:-$DEFAULT_SITE_URL}"
+          npm run build
+
+          # GitHub Pages has no native SPA fallback. This preserves direct links
+          # such as /products/ripple-ceramic-mug after a browser refresh.
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

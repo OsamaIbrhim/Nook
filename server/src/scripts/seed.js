@@ -88,10 +88,6 @@ async function seed() {
   const products = await Product.create(catalog.map(([name, category, price, stock, shortDescription, photoId], index) => {
     const [material, dimensions, care, benefits] = specifications[name]
     const description = `${shortDescription} Selected by Nook for its honest materials, useful proportions, and ability to improve an everyday ritual without adding visual noise.`
-    
-    let seoDesc = `${shortDescription} Discover verified materials, dimensions, care details, secure checkout, and 30-day returns from Nook Objects.`
-    if (seoDesc.length > 170) seoDesc = seoDesc.substring(0, 167) + '...'
-
     return {
       name,
       slug: slugify(name),
@@ -104,7 +100,7 @@ async function seed() {
       care,
       benefits,
       tags: [slugify(category), ...name.toLowerCase().split(' ').filter((word) => word.length > 3)],
-      seo: { title: `${name} — Curated ${category} Object`, description: seoDesc },
+      seo: { title: `${name} — Curated ${category} Object`, description: `${shortDescription} Discover verified materials, dimensions, care details, secure checkout, and 30-day returns from Nook Objects.` },
       price,
       compareAtPrice: index % 4 === 0 ? Number(price) + 10 : undefined,
       stock,
@@ -125,7 +121,7 @@ async function seed() {
     { user: maya, indexes: [[8, 1], [11, 2]], status: 'shipped', paymentStatus: 'paid', daysAgo: 4 },
     { user: omar, indexes: [[5, 1], [9, 1]], status: 'processing', paymentStatus: 'paid', daysAgo: 2 },
     { user: omar, indexes: [[2, 1]], status: 'delivered', paymentStatus: 'paid', daysAgo: 31 },
-    { user: lina, indexes: [[3, 2], [14, 1]], status: 'pending', paymentStatus: 'unpaid', daysAgo: 0 },
+    { user: lina, indexes: [[3, 2], [15, 1]], status: 'pending', paymentStatus: 'unpaid', daysAgo: 0 },
     { user: lina, indexes: [[1, 1], [12, 2]], status: 'cancelled', paymentStatus: 'failed', daysAgo: 9 }
   ]
 
