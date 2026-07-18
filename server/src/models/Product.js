@@ -20,7 +20,7 @@ const productSchema = new mongoose.Schema({
   tags: [{ type: String, lowercase: true, trim: true }],
   seo: {
     title: { type: String, trim: true, maxlength: 70 },
-    description: { type: String, trim: true, maxlength: 170 }
+    description: { type: String, trim: true, maxlength: 300 }
   },
   price: { type: Number, required: true, min: 0 },
   compareAtPrice: { type: Number, min: 0 },

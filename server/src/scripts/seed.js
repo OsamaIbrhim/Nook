@@ -121,7 +121,7 @@ async function seed() {
     { user: maya, indexes: [[8, 1], [11, 2]], status: 'shipped', paymentStatus: 'paid', daysAgo: 4 },
     { user: omar, indexes: [[5, 1], [9, 1]], status: 'processing', paymentStatus: 'paid', daysAgo: 2 },
     { user: omar, indexes: [[2, 1]], status: 'delivered', paymentStatus: 'paid', daysAgo: 31 },
-    { user: lina, indexes: [[3, 2], [15, 1]], status: 'pending', paymentStatus: 'unpaid', daysAgo: 0 },
+    { user: lina, indexes: [[3, 2], [14, 1]], status: 'pending', paymentStatus: 'unpaid', daysAgo: 0 },
     { user: lina, indexes: [[1, 1], [12, 2]], status: 'cancelled', paymentStatus: 'failed', daysAgo: 9 }
   ]
 
