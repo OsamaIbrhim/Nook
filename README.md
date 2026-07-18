@@ -1,23 +1,83 @@
-# Nook — Full-Stack E-Commerce
+# Nook
 
-A complete e-commerce API and responsive dashboard/storefront.
+A full-stack e-commerce platform that covers the complete customer and store-admin workflow, from product discovery and checkout to inventory, order fulfillment, and user management.
 
-## Stack
+[Live Storefront](https://osamaibrhim.github.io/Nook/) · [API Health](https://nook-beryl.vercel.app/api/v1/health) · [Backend Documentation](server/README.md) · [Frontend Documentation](client/README.md)
 
-- **API:** Node.js, Express, MongoDB, Mongoose
-- **Web:** React, TypeScript, Redux Toolkit, Tailwind CSS, Vite
-- **Auth:** JWT access tokens and rotating refresh-token cookies
-- **Payments:** Stripe Checkout and verified webhooks
-- **Images:** Cloudinary
+## What Nook includes
 
-## Projects
+### Customer experience
 
-- [`server/`](server/) — authentication, catalog, orders, inventory, payments, and admin API
-- [`client/`](client/) — customer storefront, cart/checkout, order history, and admin dashboard
+- Responsive storefront with product search, filtering, sorting, and detailed product pages
+- Persistent Redux cart and protected customer routes
+- Registration and login with automatic access-token refresh
+- Shipping checkout flow with Stripe Checkout
+- Order history, order details, payment resume, and eligible order cancellation
+- Loading skeletons, empty states, offline handling, retryable errors, toast feedback, keyboard navigation, and reduced-motion support
+
+### Store administration
+
+- Protected admin dashboard with store statistics
+- Product, category, image, inventory, order, and user management
+- Controlled order-status transitions from pending through delivery
+- Responsive mobile layouts for admin workflows
+
+### Backend and security
+
+- REST API built with Node.js, Express, MongoDB, and Mongoose
+- Short-lived JWT access tokens with rotating refresh tokens stored in `httpOnly` cookies
+- Customer/admin role authorization and account activation controls
+- Server-priced orders and transactional stock reservation
+- Stripe signature verification and idempotent webhook processing
+- Cloudinary image uploads
+- Helmet, CORS allow-listing, rate limiting, request-size limits, centralized error handling, and graceful shutdown
+
+### SEO and performance
+
+- Route-specific metadata, canonical URLs, Open Graph, and Twitter cards
+- Product and breadcrumb JSON-LD
+- Generated `robots.txt` and XML sitemap
+- Lazy route bundles and an image-led homepage experience without a heavy 3D runtime
+
+## Architecture
+
+```mermaid
+flowchart LR
+    U[Customer or Admin] --> W[React + TypeScript Web App]
+    W --> A[Express REST API]
+    A --> M[(MongoDB Atlas)]
+    A --> S[Stripe Checkout and Webhooks]
+    A --> C[Cloudinary]
+
+    subgraph Deployment
+      W --- G[GitHub Pages]
+      A --- V[Vercel Serverless]
+    end
+```
+
+## Technology stack
+
+| Area | Technologies |
+|---|---|
+| Frontend | React 19, TypeScript, Redux Toolkit, React Router, Tailwind CSS, Vite |
+| Backend | Node.js 20+, Express 5, MongoDB, Mongoose |
+| Authentication | JWT access tokens, rotating refresh-token cookies, bcrypt |
+| Payments | Stripe Checkout, verified webhooks |
+| Media | Cloudinary, Multer |
+| Quality and delivery | Node test runner, Oxlint, GitHub Actions, GitHub Pages, Vercel |
+
+## Repository structure
+
+```text
+Nook/
+├── client/   # Storefront, customer account, checkout, and admin dashboard
+├── server/   # REST API, authentication, catalog, orders, payments, and inventory
+└── .github/  # CI and GitHub Pages deployment workflow
+```
 
 ## Local development
 
-### 1. API
+### 1. Start the API
 
 ```bash
 cd server
@@ -28,7 +88,7 @@ npm run dev
 
 The API defaults to `http://localhost:5000/api/v1`. MongoDB must support transactions; MongoDB Atlas is recommended.
 
-### 2. Web app
+### 2. Start the web app
 
 ```bash
 cd client
@@ -37,21 +97,38 @@ npm install
 npm run dev
 ```
 
-The app defaults to `http://localhost:5173`. Ensure the server's `CLIENT_URL` matches it.
+Set `VITE_API_URL` to the API URL and make sure the backend `CLIENT_URL` includes the frontend origin.
 
-### 3. Demo data
+### 3. Add demo data
 
 ```bash
 cd server
 npm run seed
 ```
 
-This adds sample categories, products, customers, and orders. Sign in with `admin@nook.test` / `Admin123!` or `maya@nook.test` / `Customer123!`.
+The seed script adds sample categories, products, customers, and orders. Local demo-account details are documented in [`server/README.md`](server/README.md).
 
-To create a separate administrator:
+## Quality checks
 
 ```bash
-npm run create-admin -- "Store Admin" admin@example.com "secure-password"
+# Backend
+cd server
+npm test
+npm run check
+
+# Frontend
+cd client
+npm run lint
+npm run build
 ```
 
-See each project's README for endpoint, Stripe, and Cloudinary details. For automated CI and frontend deployment, follow [`GITHUB_DEPLOYMENT.md`](GITHUB_DEPLOYMENT.md); the workflow is stored in `.github/workflows/pages.yml`.
+GitHub Actions runs the backend tests and entry-point check, then lints and builds the frontend before deploying the storefront.
+
+## Deployment
+
+- **Frontend:** GitHub Pages at `https://osamaibrhim.github.io/Nook/`
+- **Backend:** Vercel at `https://nook-beryl.vercel.app`
+- **Database:** MongoDB Atlas or another MongoDB replica set
+- **External services:** Stripe and Cloudinary
+
+Production secrets must be configured only in the deployment platforms and must never be committed to the repository.
