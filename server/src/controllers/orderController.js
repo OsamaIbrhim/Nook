@@ -4,12 +4,10 @@ import { Product } from '../models/Product.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { assertObjectId, parsePositiveInt, requireFields } from '../validators/common.js';
-import { env } from '../config/env.js';
+import { shopPolicy } from '../config/shopPolicy.js';
+import { isAwaitingPayment, transitionBlocker } from '../domain/orderStatus.js';
+import { shippingFor } from '../domain/pricing.js';
 import { restoreOrderInventory } from '../services/inventoryService.js';
-
-const transitions = {
-  pending: ['processing', 'cancelled'], processing: ['shipped', 'cancelled'], shipped: ['delivered'], delivered: [], cancelled: []
-};
 
 export const createOrder = asyncHandler(async (req, res) => {
   requireFields(req.body, ['items', 'shippingAddress']);
@@ -19,7 +17,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   for (const item of req.body.items) {
     assertObjectId(item.product, 'product');
     const quantity = Number.parseInt(item.quantity, 10);
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) throw new ApiError(400, 'Item quantity must be between 1 and 99');
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > shopPolicy.maxLineQuantity) throw new ApiError(400, `Item quantity must be between 1 and ${shopPolicy.maxLineQuantity}`);
     quantities.set(item.product, (quantities.get(item.product) || 0) + quantity);
   }
 
@@ -37,8 +35,8 @@ export const createOrder = asyncHandler(async (req, res) => {
         items.push({ product: product.id, name: product.name, image: product.images[0]?.url, unitPrice: product.price, quantity, lineTotal: product.price * quantity });
       }
       const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
-      const shipping = 0;
-      [order] = await Order.create([{ user: req.user.id, items, shippingAddress: req.body.shippingAddress, subtotal, shipping, total: subtotal + shipping, currency: env.currency }], { session });
+      const shipping = shippingFor(subtotal, shopPolicy);
+      [order] = await Order.create([{ user: req.user.id, items, shippingAddress: req.body.shippingAddress, subtotal, shipping, total: subtotal + shipping, currency: shopPolicy.currency }], { session });
     });
   } finally { await session.endSession(); }
   res.status(201).json({ success: true, data: { order } });
@@ -71,8 +69,9 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   assertObjectId(req.params.id); requireFields(req.body, ['status']);
   const order = await Order.findById(req.params.id);
   if (!order) throw new ApiError(404, 'Order not found');
-  if (!transitions[order.status]?.includes(req.body.status)) throw new ApiError(409, `Cannot change status from ${order.status} to ${req.body.status}`);
-  if (req.body.status === 'processing' && order.paymentStatus !== 'paid') throw new ApiError(409, 'An unpaid order cannot be processed');
+  const blocker = transitionBlocker(order, req.body.status);
+  if (blocker === 'not_allowed') throw new ApiError(409, `Cannot change status from ${order.status} to ${req.body.status}`);
+  if (blocker === 'payment_required') throw new ApiError(409, 'An unpaid order cannot be processed');
   if (req.body.status === 'cancelled' && order.inventoryReserved) await restoreOrderInventory(order);
   order.status = req.body.status; order.statusHistory.push({ status: req.body.status, by: req.user.id });
   await order.save();
@@ -83,7 +82,7 @@ export const cancelMyOrder = asyncHandler(async (req, res) => {
   assertObjectId(req.params.id);
   const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
   if (!order) throw new ApiError(404, 'Order not found');
-  if (order.status !== 'pending' || order.paymentStatus !== 'unpaid') throw new ApiError(409, 'Only pending unpaid orders can be cancelled');
+  if (!isAwaitingPayment(order)) throw new ApiError(409, 'Only pending unpaid orders can be cancelled');
   await restoreOrderInventory(order);
   order.status = 'cancelled'; order.statusHistory.push({ status: 'cancelled', by: req.user.id }); await order.save();
   res.json({ success: true, data: { order } });

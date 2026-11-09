@@ -1,4 +1,5 @@
 import { Product } from '../models/Product.js';
+import { AWAITING_PAYMENT } from '../domain/orderStatus.js';
 
 export async function restoreOrderInventory(order, session) {
   if (!order.inventoryReserved) return;
@@ -10,7 +11,7 @@ export async function restoreOrderInventory(order, session) {
 
 export async function releaseExpiredUnstartedReservations(Order, mongoose) {
   const expired = await Order.find({
-    status: 'pending', paymentStatus: 'unpaid', inventoryReserved: true,
+    ...AWAITING_PAYMENT, inventoryReserved: true,
     stripeCheckoutSessionId: { $exists: false }, reservationExpiresAt: { $lte: new Date() }
   }).select('_id').limit(100).lean();
   for (const candidate of expired) {
@@ -18,7 +19,7 @@ export async function releaseExpiredUnstartedReservations(Order, mongoose) {
     try {
       await session.withTransaction(async () => {
         const order = await Order.findOne({
-          _id: candidate._id, status: 'pending', paymentStatus: 'unpaid', inventoryReserved: true,
+          _id: candidate._id, ...AWAITING_PAYMENT, inventoryReserved: true,
           stripeCheckoutSessionId: { $exists: false }, reservationExpiresAt: { $lte: new Date() }
         }).session(session);
         if (!order) return;

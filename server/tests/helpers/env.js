@@ -1,0 +1,10 @@
+process.env.NODE_ENV = 'test';
+process.env.CLIENT_URL = 'http://localhost:5173';
+process.env.COOKIE_SECURE = 'false';
+process.env.ACCESS_TOKEN_TTL = '15m';
+process.env.REFRESH_TOKEN_TTL = '7d';
+process.env.STRIPE_CURRENCY = 'usd';
+process.env.JWT_ACCESS_SECRET = 'test-access-secret-placeholder-0000000000';
+process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-placeholder-000000000';
+process.env.STRIPE_SECRET_KEY = '';
+process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_placeholder';

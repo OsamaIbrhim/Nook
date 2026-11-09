@@ -22,3 +22,5 @@ coverage/
 # Docs
 GITHUB_DEPLOYMENT.md
 ecommerce-redesign-blueprint.md
+# AI output
+.ai-workspace/

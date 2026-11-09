@@ -6,5 +6,5 @@ export const refreshCookieOptions = {
   secure: env.cookieSecure,
   sameSite: env.cookieSecure ? 'none' : 'lax',
   path: '/api/v1/auth',
-  maxAge: 7 * 24 * 60 * 60 * 1000
+  maxAge: env.refreshTtlMs
 };
