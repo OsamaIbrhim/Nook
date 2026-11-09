@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ORDER_STATUSES, PAYMENT_STATUSES } from '../domain/orderStatus.js';
+import { isConsistent, ORDER_STATUSES, PAYMENT_STATUSES } from '../domain/orderStatus.js';
 import { reservationExpiry } from '../domain/reservation.js';
 import { shopPolicy } from '../config/shopPolicy.js';
 
@@ -26,7 +26,8 @@ const addressSchema = new mongoose.Schema({
 const statusHistorySchema = new mongoose.Schema({
   status: { type: String, required: true },
   at: { type: Date, default: Date.now },
-  by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  note: String
 }, { _id: false });
 
 const orderSchema = new mongoose.Schema({
@@ -41,10 +42,18 @@ const orderSchema = new mongoose.Schema({
   paymentStatus: { type: String, enum: PAYMENT_STATUSES, default: 'unpaid', index: true },
   stripeCheckoutSessionId: { type: String, sparse: true, unique: true },
   stripePaymentIntentId: String,
+  idempotencyKey: String,
+  requestFingerprint: String,
   inventoryReserved: { type: Boolean, default: true },
   reservationExpiresAt: { type: Date, default: () => reservationExpiry(new Date(), shopPolicy) },
   statusHistory: { type: [statusHistorySchema], default: [{ status: 'pending', at: new Date() }] }
 }, { timestamps: true });
 
+orderSchema.pre('validate', function rejectCancelledPaid() {
+  if (!isConsistent(this)) this.invalidate('status', 'A cancelled order cannot be marked paid');
+});
+
 orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ user: 1, idempotencyKey: 1 }, { unique: true, partialFilterExpression: { idempotencyKey: { $type: 'string' } } });
+orderSchema.index({ reservationExpiresAt: 1 }, { partialFilterExpression: { status: 'pending', paymentStatus: 'unpaid', inventoryReserved: true } });
 export const Order = mongoose.model('Order', orderSchema);

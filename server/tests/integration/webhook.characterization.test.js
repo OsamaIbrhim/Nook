@@ -8,9 +8,9 @@ import { address, bearer, createCategory, createOrderDocument, createProduct, cr
 import { Product } from '../../src/models/Product.js';
 import { Order } from '../../src/models/Order.js';
 import { WebhookEvent } from '../../src/models/WebhookEvent.js';
+import { createWebhookSender } from '../helpers/webhookEvents.js';
 
 let db, stub, api, admin, alice, category, mug;
-let eventCounter = 0;
 
 before(async () => {
   db = await startDatabase();
@@ -40,18 +40,9 @@ async function pendingOrder(overrides = {}) {
   return createOrderDocument({ user: alice, items: [{ product: mug, quantity: 2 }], stripeCheckoutSessionId: 'cs_test_webhook', ...overrides });
 }
 
-function signedEvent(type, order, { id = `evt_test_${++eventCounter}`, signature } = {}) {
-  const payload = JSON.stringify({
-    id, object: 'event', type,
-    data: { object: { id: 'cs_test_webhook', object: 'checkout.session', payment_intent: 'pi_test_webhook', metadata: { orderId: order?.id } } }
-  });
-  const header = signature ?? stub.stripe.webhooks.generateTestHeaderString({ payload, secret: process.env.STRIPE_WEBHOOK_SECRET });
-  return { id, payload, header };
-}
-
-const deliver = ({ payload, header }) => api.request('POST', '/api/v1/payments/webhook', {
-  rawBody: payload, headers: { 'content-type': 'application/json', 'stripe-signature': header }
-});
+const sender = () => createWebhookSender({ stripe: stub.stripe, api });
+const signedEvent = (type, order, options) => sender().checkoutEvent(type, order?.id, options);
+const deliver = (event) => sender().deliver(event);
 
 describe('POST /payments/webhook', () => {
   it('moves a pending unpaid order to processing and stores the payment intent on checkout.session.completed', async () => {
@@ -134,21 +125,22 @@ describe('POST /payments/webhook', () => {
 
   it('acknowledges and records an unhandled event type without changing the order', async () => {
     const order = await pendingOrder();
-    const res = await deliver(signedEvent('charge.refunded', order));
+    const res = await deliver(signedEvent('customer.created', order));
     assert.equal(res.status, 200);
     assert.equal((await reload(order)).status, 'pending');
     assert.equal(await WebhookEvent.countDocuments(), 1);
   });
 
-  it('KNOWN BUG (B2): a bad signature surfaces as a 500 and records nothing (desired: 400)', async () => {
+  it('rejects a bad signature with 400 and records nothing', async () => {
     const order = await pendingOrder();
     const res = await deliver(signedEvent('checkout.session.completed', order, { signature: 't=1,v1=deadbeef' }));
-    assert.equal(res.status, 500);
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error.code, 'invalid_signature');
     assert.equal((await reload(order)).status, 'pending');
     assert.equal(await WebhookEvent.countDocuments(), 0);
   });
 
-  it('KNOWN BUG (B2): a payment completing after the customer cancelled moves the cancelled order to processing, with stock already restored and no refund', async () => {
+  it('a payment completing after the customer cancelled refunds it and leaves the order cancelled; cancelling expired the open session', async () => {
     await Product.updateOne({ _id: mug._id }, { stock: 3 });
     const created = await api.request('POST', '/api/v1/orders', {
       token: bearer(alice), body: { items: [{ product: mug.id, quantity: 2 }], shippingAddress: address }
@@ -159,14 +151,20 @@ describe('POST /payments/webhook', () => {
     assert.equal(session.status, 201);
     await api.request('POST', `/api/v1/orders/${orderId}/cancel`, { token: bearer(alice) });
     assert.equal(await stockOf(), 3);
-    assert.equal(stub.calls.filter((call) => call.path.endsWith('/expire')).length, 0, 'desired after B2: the open Checkout session is expired on cancel');
+    assert.equal(stub.calls.filter((call) => call.path === '/v1/checkout/sessions/cs_test_1/expire').length, 1);
+    assert.equal(stub.sessionStatus('cs_test_1'), 'expired');
 
-    await deliver(signedEvent('checkout.session.completed', { id: orderId }));
+    const res = await deliver(signedEvent('checkout.session.completed', { id: orderId }));
+    assert.equal(res.status, 200);
 
     const stored = await Order.findById(orderId);
-    assert.equal(stored.status, 'processing', 'desired after B2: stays cancelled');
-    assert.equal(stored.paymentStatus, 'paid', 'desired after B2: refunded');
-    assert.equal(await stockOf(), 3, 'stock stays restored although the order is now fulfillable: oversold');
-    assert.equal(stub.calls.filter((call) => call.path.startsWith('/v1/refunds')).length, 0, 'desired after B2: one refund');
+    assert.equal(stored.status, 'cancelled');
+    assert.equal(stored.paymentStatus, 'refunded');
+    assert.equal(stored.stripePaymentIntentId, 'pi_test_webhook');
+    assert.equal(await stockOf(), 3);
+    const refunds = stub.calls.filter((call) => call.path === '/v1/refunds');
+    assert.equal(refunds.length, 1);
+    assert.equal(refunds[0].params.payment_intent, 'pi_test_webhook');
+    assert.equal(refunds[0].idempotencyKey, `refund:${orderId}`);
   });
 });

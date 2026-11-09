@@ -6,6 +6,11 @@ export function shippingFor(subtotal, policy) {
   return flatShippingRate;
 }
 
+export function freeShippingRemaining(subtotal, policy) {
+  if (policy.freeShippingThreshold === null) return null;
+  return fromMinorUnits(Math.max(0, toMinorUnits(policy.freeShippingThreshold) - toMinorUnits(subtotal)));
+}
+
 const idOf = (product) => String(product.id ?? product._id);
 
 function mergeLines(lines) {

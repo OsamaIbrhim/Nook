@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { actionsFor, canTransition, isAwaitingPayment, ORDER_STATUSES, PAYMENT_STATUSES, TRANSITIONS, transitionBlocker } from '../../src/domain/orderStatus.js';
+import { actionsFor, canTransition, CANCELLABLE_STATUSES, isAwaitingPayment, isConsistent, ORDER_STATUSES, PAYMENT_STATUSES, TRANSITIONS, transitionBlocker } from '../../src/domain/orderStatus.js';
 
 test('the status enumerations are the ones the Order model persists', () => {
   assert.deepEqual([...ORDER_STATUSES], ['pending', 'processing', 'shipped', 'delivered', 'cancelled']);
@@ -62,4 +62,16 @@ test('actionsFor an admin: next statuses follow the transition table and the pay
   assert.deepEqual(actionsFor({ status: 'processing', paymentStatus: 'paid' }, 'admin'), { canPay: false, canCancel: true, nextStatuses: ['shipped', 'cancelled'] });
   assert.deepEqual(actionsFor({ status: 'shipped', paymentStatus: 'paid' }, 'admin'), { canPay: false, canCancel: false, nextStatuses: ['delivered'] });
   assert.deepEqual(actionsFor({ status: 'delivered', paymentStatus: 'paid' }, 'admin'), { canPay: false, canCancel: false, nextStatuses: [] });
+});
+
+test('an order can be cancelled from pending and processing only', () => {
+  assert.deepEqual([...CANCELLABLE_STATUSES], ['pending', 'processing']);
+});
+
+test('a cancelled order that is still marked paid is the only inconsistent combination of the 5x4 status pairs', () => {
+  const inconsistent = [];
+  for (const status of ORDER_STATUSES) {
+    for (const paymentStatus of PAYMENT_STATUSES) if (!isConsistent({ status, paymentStatus })) inconsistent.push(`${status}/${paymentStatus}`);
+  }
+  assert.deepEqual(inconsistent, ['cancelled/paid']);
 });

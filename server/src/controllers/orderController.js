@@ -1,89 +1,73 @@
-import mongoose from 'mongoose';
 import { Order } from '../models/Order.js';
-import { Product } from '../models/Product.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { assertObjectId, parsePositiveInt, requireFields } from '../validators/common.js';
+import { assertObjectId, isProductId, requireFields } from '../validators/common.js';
+import { parseOrderFilters } from '../validators/orders.js';
+import { pageInfo, readPage } from '../http/paginate.js';
+import { parseIdempotencyKey } from '../validators/idempotency.js';
 import { shopPolicy } from '../config/shopPolicy.js';
-import { isAwaitingPayment, transitionBlocker } from '../domain/orderStatus.js';
-import { shippingFor } from '../domain/pricing.js';
-import { restoreOrderInventory } from '../services/inventoryService.js';
+import { cancelOrder, changeOrderStatus } from '../services/orderService.js';
+import { placeOrder } from '../services/placeOrder.js';
+import { presentOrder } from './orderPresenter.js';
+
+const orderNotFound = () => new ApiError(404, 'Order not found', undefined, { code: 'order_not_found' });
+
+function parseLines(items) {
+  return items.map((item) => {
+    if (!isProductId(item?.product)) throw new ApiError(400, 'Invalid product');
+    const quantity = Number.parseInt(item.quantity, 10);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > shopPolicy.maxLineQuantity) throw new ApiError(400, `Item quantity must be between 1 and ${shopPolicy.maxLineQuantity}`);
+    return { productId: item.product.toLowerCase(), quantity };
+  });
+}
 
 export const createOrder = asyncHandler(async (req, res) => {
   requireFields(req.body, ['items', 'shippingAddress']);
   if (!Array.isArray(req.body.items) || !req.body.items.length) throw new ApiError(400, 'Cart must contain at least one item');
-  requireFields(req.body.shippingAddress, ['name', 'line1', 'city', 'postalCode', 'country']);
-  const quantities = new Map();
-  for (const item of req.body.items) {
-    assertObjectId(item.product, 'product');
-    const quantity = Number.parseInt(item.quantity, 10);
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > shopPolicy.maxLineQuantity) throw new ApiError(400, `Item quantity must be between 1 and ${shopPolicy.maxLineQuantity}`);
-    quantities.set(item.product, (quantities.get(item.product) || 0) + quantity);
-  }
-
-  const session = await mongoose.startSession();
-  let order;
-  try {
-    await session.withTransaction(async () => {
-      const products = await Product.find({ _id: { $in: [...quantities.keys()] }, isActive: true }).session(session);
-      if (products.length !== quantities.size) throw new ApiError(400, 'One or more products are unavailable');
-      const items = [];
-      for (const product of products) {
-        const quantity = quantities.get(product.id);
-        const reserved = await Product.updateOne({ _id: product.id, stock: { $gte: quantity } }, { $inc: { stock: -quantity } }, { session });
-        if (!reserved.modifiedCount) throw new ApiError(409, `Insufficient stock for ${product.name}`);
-        items.push({ product: product.id, name: product.name, image: product.images[0]?.url, unitPrice: product.price, quantity, lineTotal: product.price * quantity });
-      }
-      const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
-      const shipping = shippingFor(subtotal, shopPolicy);
-      [order] = await Order.create([{ user: req.user.id, items, shippingAddress: req.body.shippingAddress, subtotal, shipping, total: subtotal + shipping, currency: shopPolicy.currency }], { session });
-    });
-  } finally { await session.endSession(); }
-  res.status(201).json({ success: true, data: { order } });
+  requireFields(req.body.shippingAddress, ['name', 'line1', 'city', 'postalCode', 'country'], 'shippingAddress.');
+  const idempotencyKey = parseIdempotencyKey(req.get('idempotency-key'));
+  const { order, created } = await placeOrder({
+    userId: req.user.id, lines: parseLines(req.body.items), shippingAddress: req.body.shippingAddress, idempotencyKey, now: req.app.locals.now()
+  });
+  res.status(created ? 201 : 200).json({ success: true, data: { order: presentOrder(order, req.user.role) } });
 });
 
 export const myOrders = asyncHandler(async (req, res) => {
-  const page = parsePositiveInt(req.query.page, 1); const limit = parsePositiveInt(req.query.limit, 10, 50);
-  const [orders, total] = await Promise.all([Order.find({ user: req.user.id }).sort('-createdAt').skip((page - 1) * limit).limit(limit).lean(), Order.countDocuments({ user: req.user.id })]);
-  res.json({ success: true, data: { orders, pagination: { page, limit, total, pages: Math.ceil(total / limit) } } });
+  const { page, limit, skip } = readPage(req.query, { defaultLimit: 10, maxLimit: 50 });
+  const [orders, total] = await Promise.all([Order.find({ user: req.user.id }).sort('-createdAt').skip(skip).limit(limit).lean(), Order.countDocuments({ user: req.user.id })]);
+  res.json({ success: true, data: { orders: orders.map((order) => presentOrder(order, req.user.role)), pagination: pageInfo({ page, limit, total }) } });
 });
 
 export const getOrder = asyncHandler(async (req, res) => {
   assertObjectId(req.params.id);
-  const order = await Order.findById(req.params.id).populate('user', 'name email');
-  if (!order) throw new ApiError(404, 'Order not found');
-  if (req.user.role !== 'admin' && order.user._id.toString() !== req.user.id) throw new ApiError(403, 'Access denied');
-  res.json({ success: true, data: { order } });
+  const ownerFilter = req.user.role === 'admin' ? {} : { user: req.user.id };
+  const order = await Order.findOne({ _id: req.params.id, ...ownerFilter }).populate('user', 'name email');
+  if (!order) throw orderNotFound();
+  res.json({ success: true, data: { order: presentOrder(order, req.user.role) } });
+});
+
+export const getOrderBySession = asyncHandler(async (req, res) => {
+  const { sessionId } = req.params;
+  const order = /^cs_[A-Za-z0-9_]+$/.test(sessionId) ? await Order.findOne({ stripeCheckoutSessionId: sessionId, user: req.user.id }) : null;
+  if (!order) throw orderNotFound();
+  res.json({ success: true, data: { order: presentOrder(order, req.user.role) } });
 });
 
 export const listOrders = asyncHandler(async (req, res) => {
-  const page = parsePositiveInt(req.query.page, 1); const limit = parsePositiveInt(req.query.limit, 20, 100);
-  const filter = {};
-  if (req.query.status) filter.status = req.query.status;
-  if (req.query.paymentStatus) filter.paymentStatus = req.query.paymentStatus;
-  const [orders, total] = await Promise.all([Order.find(filter).populate('user', 'name email').sort('-createdAt').skip((page - 1) * limit).limit(limit).lean(), Order.countDocuments(filter)]);
-  res.json({ success: true, data: { orders, pagination: { page, limit, total, pages: Math.ceil(total / limit) } } });
+  const { page, limit, skip } = readPage(req.query, { defaultLimit: 20, maxLimit: 100 });
+  const filter = parseOrderFilters(req.query);
+  const [orders, total] = await Promise.all([Order.find(filter).populate('user', 'name email').sort('-createdAt').skip(skip).limit(limit).lean(), Order.countDocuments(filter)]);
+  res.json({ success: true, data: { orders: orders.map((order) => presentOrder(order, req.user.role)), pagination: pageInfo({ page, limit, total }) } });
 });
 
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   assertObjectId(req.params.id); requireFields(req.body, ['status']);
-  const order = await Order.findById(req.params.id);
-  if (!order) throw new ApiError(404, 'Order not found');
-  const blocker = transitionBlocker(order, req.body.status);
-  if (blocker === 'not_allowed') throw new ApiError(409, `Cannot change status from ${order.status} to ${req.body.status}`);
-  if (blocker === 'payment_required') throw new ApiError(409, 'An unpaid order cannot be processed');
-  if (req.body.status === 'cancelled' && order.inventoryReserved) await restoreOrderInventory(order);
-  order.status = req.body.status; order.statusHistory.push({ status: req.body.status, by: req.user.id });
-  await order.save();
-  res.json({ success: true, data: { order } });
+  const order = await changeOrderStatus({ orderId: req.params.id, to: req.body.status, actor: { id: req.user.id, role: 'admin' }, getStripe: req.app.locals.getStripe });
+  res.json({ success: true, data: { order: presentOrder(order, req.user.role) } });
 });
 
 export const cancelMyOrder = asyncHandler(async (req, res) => {
   assertObjectId(req.params.id);
-  const order = await Order.findOne({ _id: req.params.id, user: req.user.id });
-  if (!order) throw new ApiError(404, 'Order not found');
-  if (!isAwaitingPayment(order)) throw new ApiError(409, 'Only pending unpaid orders can be cancelled');
-  await restoreOrderInventory(order);
-  order.status = 'cancelled'; order.statusHistory.push({ status: 'cancelled', by: req.user.id }); await order.save();
-  res.json({ success: true, data: { order } });
+  const order = await cancelOrder({ orderId: req.params.id, actor: { id: req.user.id, role: 'customer' }, getStripe: req.app.locals.getStripe });
+  res.json({ success: true, data: { order: presentOrder(order, req.user.role) } });
 });

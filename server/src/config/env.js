@@ -25,11 +25,13 @@ export const env = {
   refreshTtl,
   refreshTtlMs: parseTtlToMs(refreshTtl),
   cookieSecure: process.env.COOKIE_SECURE === 'true' || process.env.NODE_ENV === 'production',
+  cookieSameSite: process.env.COOKIE_SAMESITE?.toLowerCase() || undefined,
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET
   },
   stripeSecret: process.env.STRIPE_SECRET_KEY,
-  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  cronSecret: process.env.CRON_SECRET || undefined
 };

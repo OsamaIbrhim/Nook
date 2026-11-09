@@ -38,7 +38,7 @@ export async function createOrderDocument({ user, items, ...overrides }) {
   }));
   const subtotal = lines.reduce((sum, line) => sum + line.lineTotal, 0);
   return Order.create({
-    user: user._id, items: lines, shippingAddress: address, subtotal, shipping: 0, total: subtotal, currency: 'usd',
+    user: user._id, items: lines, shippingAddress: address, subtotal, shipping: 0, total: subtotal, currency: 'egp',
     ...overrides
   });
 }

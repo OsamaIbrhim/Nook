@@ -9,6 +9,10 @@ export const TRANSITIONS = Object.freeze({
   cancelled: Object.freeze([])
 });
 
+export const CANCELLABLE_STATUSES = Object.freeze(ORDER_STATUSES.filter((from) => TRANSITIONS[from].includes('cancelled')));
+
+export const isConsistent = (order) => !(order.status === 'cancelled' && order.paymentStatus === 'paid');
+
 export const AWAITING_PAYMENT = Object.freeze({ status: 'pending', paymentStatus: 'unpaid' });
 
 export const isAwaitingPayment = (order) => order.status === AWAITING_PAYMENT.status && order.paymentStatus === AWAITING_PAYMENT.paymentStatus;

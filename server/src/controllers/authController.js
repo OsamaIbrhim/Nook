@@ -40,7 +40,7 @@ export const login = asyncHandler(async (req, res) => {
 
 export const refresh = asyncHandler(async (req, res) => {
   const rawToken = req.cookies[refreshCookieName];
-  if (!rawToken) throw new ApiError(401, 'Refresh token required');
+  if (!rawToken) return res.status(204).send();
   let payload;
   try { payload = verifyRefreshToken(rawToken); } catch { throw new ApiError(401, 'Invalid or expired refresh token'); }
   const stored = await RefreshToken.findOne({ tokenHash: hashToken(rawToken) });

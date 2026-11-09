@@ -7,7 +7,6 @@ import { startApi } from '../helpers/apiClient.js';
 import { address, bearer, createCategory, createOrderDocument, createProduct, createUser } from '../helpers/factories.js';
 import { Product } from '../../src/models/Product.js';
 import { Order } from '../../src/models/Order.js';
-import { restoreOrderInventory } from '../../src/services/inventoryService.js';
 
 let db, stub, api, admin, alice, bob, category, mug, lamp;
 
@@ -42,7 +41,7 @@ const cancelAsCustomer = (user, id) => api.request('POST', `/api/v1/orders/${id}
 const setStatus = (user, id, status) => api.request('PATCH', `/api/v1/orders/${id}/status`, { token: bearer(user), body: { status } });
 
 describe('POST /orders', () => {
-  it('prices the order on the server, reserves stock and charges no shipping', async () => {
+  it('prices the order on the server, reserves stock and adds the flat 50 shipping below 200', async () => {
     const res = await place(alice, [[mug, 2], [lamp, 1]]);
     assert.equal(res.status, 201);
     const { order } = res.body.data;
@@ -51,9 +50,9 @@ describe('POST /orders', () => {
     assert.equal(byName['Ripple Ceramic Mug'].lineTotal, 48);
     assert.equal(byName['Arc Table Lamp'].lineTotal, 99.5);
     assert.equal(order.subtotal, 147.5);
-    assert.equal(order.shipping, 0);
-    assert.equal(order.total, 147.5);
-    assert.equal(order.currency, 'usd');
+    assert.equal(order.shipping, 50);
+    assert.equal(order.total, 197.5);
+    assert.equal(order.currency, 'egp');
     assert.equal(order.status, 'pending');
     assert.equal(order.paymentStatus, 'unpaid');
     assert.equal(order.inventoryReserved, true);
@@ -63,11 +62,34 @@ describe('POST /orders', () => {
     assert.equal(await stockOf(lamp), 1);
   });
 
-  it('charges no shipping even for a subtotal below 100 (no flat rate exists today)', async () => {
+  it('charges 50 shipping on a single mug: 24 + 50 = 74', async () => {
     const res = await place(alice, [[mug, 1]]);
     assert.equal(res.body.data.order.subtotal, 24);
-    assert.equal(res.body.data.order.shipping, 0);
-    assert.equal(res.body.data.order.total, 24);
+    assert.equal(res.body.data.order.shipping, 50);
+    assert.equal(res.body.data.order.total, 74);
+  });
+
+  it('charges 50 shipping at 199.00 and none at 223.00: 2 x 99.50 = 199, then + 1 x 24 = 223', async () => {
+    const below = await place(alice, [[lamp, 2]]);
+    assert.equal(below.body.data.order.subtotal, 199);
+    assert.equal(below.body.data.order.shipping, 50);
+    assert.equal(below.body.data.order.total, 249);
+    await Product.updateOne({ _id: lamp._id }, { stock: 2 });
+    const above = await place(alice, [[lamp, 2], [mug, 1]]);
+    assert.equal(above.body.data.order.subtotal, 223);
+    assert.equal(above.body.data.order.shipping, 0);
+    assert.equal(above.body.data.order.total, 223);
+  });
+
+  it('applies the free shipping threshold on the subtotal: 199.99 pays 50 (total 249.99), 200.00 is free', async () => {
+    const justBelow = await createProduct({ category, createdBy: admin, price: 199.99, stock: 3 });
+    const exactly = await createProduct({ category, createdBy: admin, price: 200, stock: 3 });
+    const paying = await place(alice, [[justBelow, 1]]);
+    assert.equal(paying.body.data.order.shipping, 50);
+    assert.equal(paying.body.data.order.total, 249.99);
+    const free = await place(alice, [[exactly, 1]]);
+    assert.equal(free.body.data.order.shipping, 0);
+    assert.equal(free.body.data.order.total, 200);
   });
 
   it('holds the reservation for 35 minutes from creation', async () => {
@@ -82,7 +104,7 @@ describe('POST /orders', () => {
       token: bearer(alice), body: { items: [{ product: mug.id, quantity: 1, unitPrice: 0.01, price: 0.01 }], shippingAddress: address }
     });
     assert.equal(res.body.data.order.items[0].unitPrice, 24);
-    assert.equal(res.body.data.order.total, 24);
+    assert.equal(res.body.data.order.total, 74);
   });
 
   it('merges repeated lines for the same product', async () => {
@@ -168,11 +190,11 @@ describe('GET orders', () => {
     assert.equal(adminRead.status, 200);
   });
 
-  it('KNOWN GAP (B4): another customer reading an order gets 403, which discloses that it exists (desired: 404)', async () => {
+  it('answers 404 to another customer reading an order, so its existence is not disclosed', async () => {
     const order = await createOrderDocument({ user: alice, items: [{ product: mug, quantity: 1 }] });
     const stranger = await api.request('GET', `/api/v1/orders/${order.id}`, { token: bearer(bob) });
-    assert.equal(stranger.status, 403);
-    assert.equal(stranger.body.error.message, 'Access denied');
+    assert.equal(stranger.status, 404);
+    assert.equal(stranger.body.error.message, 'Order not found');
   });
 
   it('restricts the admin order list to admins', async () => {
@@ -195,13 +217,14 @@ describe('POST /orders/:id/cancel (customer)', () => {
     assert.equal(history.at(-1).by, alice.id);
   });
 
-  it('refuses a second sequential cancel with 409 and does not restore stock twice', async () => {
+  it('answers a second sequential cancel with 200 and the cancelled order, and restores stock once', async () => {
     const created = await place(alice, [[mug, 2]]);
     const id = created.body.data.order._id;
     await cancelAsCustomer(alice, id);
     const again = await cancelAsCustomer(alice, id);
-    assert.equal(again.status, 409);
-    assert.equal(again.body.error.message, 'Only pending unpaid orders can be cancelled');
+    assert.equal(again.status, 200);
+    assert.equal(again.body.data.order.status, 'cancelled');
+    assert.equal(again.body.data.order.statusHistory.filter((entry) => entry.status === 'cancelled').length, 1);
     assert.equal(await stockOf(mug), 5);
   });
 
@@ -214,20 +237,30 @@ describe('POST /orders/:id/cancel (customer)', () => {
     assert.equal(res.body.error.message, 'Only pending unpaid orders can be cancelled');
   });
 
-  it('KNOWN BUG (B1): two stale copies of one order both restore stock, crediting it twice', async () => {
-    const created = await place(alice, [[mug, 2]]);
-    const first = await Order.findById(created.body.data.order._id);
-    const second = await Order.findById(created.body.data.order._id);
-    await restoreOrderInventory(first);
-    await restoreOrderInventory(second);
-    assert.equal(await stockOf(mug), 7, 'desired after B1: 5, because 3 remained after the order and 2 are restored once');
-  });
-
-  it('two concurrent cancels restore the stock exactly once', { todo: 'B1: cancel is not atomic, so the current outcome is a race' }, async () => {
+  it('a customer cancel racing an admin cancel restores the stock exactly once', async () => {
     const created = await place(alice, [[mug, 2]]);
     const id = created.body.data.order._id;
-    await Promise.all([cancelAsCustomer(alice, id), cancelAsCustomer(alice, id)]);
+    assert.equal(await stockOf(mug), 3);
+    const results = await Promise.all([cancelAsCustomer(alice, id), setStatus(admin, id, 'cancelled')]);
+    assert.ok(results.every((res) => res.status === 200), results.map((res) => res.status).join());
     assert.equal(await stockOf(mug), 5);
+    assert.equal((await Order.findById(id)).inventoryReserved, false);
+  });
+
+  it('two concurrent customer cancels restore the stock exactly once', async () => {
+    const created = await place(alice, [[mug, 2]]);
+    const id = created.body.data.order._id;
+    const results = await Promise.all([cancelAsCustomer(alice, id), cancelAsCustomer(alice, id)]);
+    assert.deepEqual(results.map((res) => res.status), [200, 200]);
+    assert.equal(await stockOf(mug), 5);
+  });
+
+  it('restores every line of a multi-item order exactly once: 5 + 2, 2 + 1 after a double cancel', async () => {
+    const created = await place(alice, [[mug, 2], [lamp, 1]]);
+    const id = created.body.data.order._id;
+    await Promise.all([cancelAsCustomer(alice, id), cancelAsCustomer(alice, id), setStatus(admin, id, 'cancelled')]);
+    assert.equal(await stockOf(mug), 5);
+    assert.equal(await stockOf(lamp), 2);
   });
 });
 
@@ -235,10 +268,10 @@ describe('PATCH /orders/:id/status (admin)', () => {
   const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
   const allowed = new Set(['pending>processing', 'pending>cancelled', 'processing>shipped', 'processing>cancelled', 'shipped>delivered']);
 
-  it('permits exactly the five documented transitions for a paid order', async () => {
+  it('permits exactly the five documented transitions (a cancelled order is refunded, never paid)', async () => {
     for (const from of statuses) {
       for (const to of statuses) {
-        const order = await createOrderDocument({ user: alice, items: [{ product: mug, quantity: 1 }], status: from, paymentStatus: 'paid', inventoryReserved: false });
+        const order = await createOrderDocument({ user: alice, items: [{ product: mug, quantity: 1 }], status: from, paymentStatus: from === 'cancelled' ? 'refunded' : 'paid', stripePaymentIntentId: 'pi_test_matrix', inventoryReserved: false });
         const res = await setStatus(admin, order.id, to);
         const expected = allowed.has(`${from}>${to}`) ? 200 : 409;
         assert.equal(res.status, expected, `${from} -> ${to}`);
@@ -276,14 +309,17 @@ describe('PATCH /orders/:id/status (admin)', () => {
     assert.equal(await stockOf(mug), 5);
   });
 
-  it('KNOWN BUG (B2): cancelling a paid order restores stock, leaves paymentStatus paid and issues no refund', async () => {
+  it('cancelling a paid order refunds it in full once, marks it refunded and restores the stock', async () => {
     await Product.updateOne({ _id: mug._id }, { stock: 3 });
     const order = await createOrderDocument({ user: alice, items: [{ product: mug, quantity: 2 }], status: 'processing', paymentStatus: 'paid', stripePaymentIntentId: 'pi_test_paid', inventoryReserved: true });
     const res = await setStatus(admin, order.id, 'cancelled');
     assert.equal(res.status, 200);
     assert.equal(res.body.data.order.status, 'cancelled');
-    assert.equal(res.body.data.order.paymentStatus, 'paid', 'desired after B2: refunded');
-    assert.equal(stub.calls.filter((call) => call.path.startsWith('/v1/refunds')).length, 0, 'desired after B2: exactly one refund call');
+    assert.equal(res.body.data.order.paymentStatus, 'refunded');
+    const refunds = stub.calls.filter((call) => call.path === '/v1/refunds');
+    assert.equal(refunds.length, 1);
+    assert.equal(refunds[0].params.payment_intent, 'pi_test_paid');
+    assert.equal(refunds[0].idempotencyKey, `refund:${order.id}`);
     assert.equal(await stockOf(mug), 5);
   });
 });

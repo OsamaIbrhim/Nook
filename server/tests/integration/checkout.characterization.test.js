@@ -11,12 +11,13 @@ import { Order } from '../../src/models/Order.js';
 const NOW_UNIX = 1_794_225_600;
 const now = () => new Date(NOW_UNIX * 1000);
 
-let db, stub, api, admin, alice, bob, category, mug, lamp;
+let db, stub, api, laterApi, admin, alice, bob, category, mug, lamp;
 
 before(async () => {
   db = await startDatabase();
   stub = await startStripeStub();
   api = await startApi({ stripe: stub.stripe, now });
+  laterApi = await startApi({ stripe: stub.stripe, now: () => new Date((NOW_UNIX + 7) * 1000) });
   admin = await createUser({ role: 'admin' });
   alice = await createUser();
   bob = await createUser();
@@ -24,6 +25,7 @@ before(async () => {
 });
 
 after(async () => {
+  await laterApi.stop();
   await api.stop();
   await stub.stop();
   await db.stop();
@@ -54,7 +56,7 @@ describe('POST /payments/checkout-session', () => {
     assert.equal(call.params.mode, 'payment');
     assert.equal(call.params.customer_email, alice.email);
     assert.equal(call.params['metadata[orderId]'], order.id);
-    assert.equal(call.params['line_items[0][price_data][currency]'], 'usd');
+    assert.equal(call.params['line_items[0][price_data][currency]'], 'egp');
     assert.equal(call.params['line_items[0][price_data][unit_amount]'], '2400');
     assert.equal(call.params['line_items[0][quantity]'], '2');
     assert.equal(call.params['line_items[1][price_data][unit_amount]'], '9950');
@@ -90,6 +92,23 @@ describe('POST /payments/checkout-session', () => {
     const second = await checkout(alice, order.id);
     assert.equal(second.status, 201);
     assert.equal(second.body.data.sessionId, 'cs_test_2');
+  });
+
+  it('sends a Stripe idempotency key that names the order and the session it replaces, so a re-created session is not mistaken for a replay', async () => {
+    const order = await freshOrder();
+    await checkout(alice, order.id);
+    stub.setSessionStatus('cs_test_1', 'expired');
+    await checkout(alice, order.id);
+    const creations = stub.calls.filter((c) => c.method === 'POST' && c.path === '/v1/checkout/sessions');
+    assert.deepEqual(creations.map((c) => c.idempotencyKey), [`session:${order.id}:first:${NOW_UNIX + 1800}`, `session:${order.id}:after-cs_test_1:${NOW_UNIX + 1800}`]);
+  });
+
+  it('survives two simultaneous requests whose clocks differ by seconds: Stripe rejects a reused key with other parameters, so the key carries the session expiry', async () => {
+    stub.delaySessionCreation(150);
+    const order = await freshOrder();
+    const post = (client) => client.request('POST', '/api/v1/payments/checkout-session', { token: bearer(alice), body: { orderId: order.id } });
+    const results = await Promise.all([post(api), post(laterApi)]);
+    assert.ok(results.every((res) => res.status === 200 || res.status === 201), results.map((res) => res.status).join());
   });
 
   it('refuses an order whose reservation has expired', async () => {

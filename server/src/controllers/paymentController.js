@@ -1,11 +1,9 @@
-import mongoose from 'mongoose';
 import { env } from '../config/env.js';
 import { Order } from '../models/Order.js';
-import { WebhookEvent } from '../models/WebhookEvent.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { assertObjectId, requireFields } from '../validators/common.js';
-import { restoreOrderInventory } from '../services/inventoryService.js';
+import { handleStripeEvent } from '../services/webhookService.js';
 import { shopPolicy } from '../config/shopPolicy.js';
 import { isAwaitingPayment } from '../domain/orderStatus.js';
 import { toMinorUnits } from '../domain/money.js';
@@ -24,6 +22,7 @@ export const createCheckoutSession = asyncHandler(async (req, res) => {
     const existing = await getStripe().checkout.sessions.retrieve(order.stripeCheckoutSessionId);
     if (existing.status === 'open') return res.json({ success: true, data: { sessionId: existing.id, url: existing.url } });
   }
+  const expiresAt = checkoutSessionExpiryUnix(now(), shopPolicy);
   const session = await getStripe().checkout.sessions.create({
     mode: 'payment',
     customer_email: req.user.email,
@@ -32,8 +31,8 @@ export const createCheckoutSession = asyncHandler(async (req, res) => {
     payment_intent_data: { metadata: { orderId: order.id } },
     success_url: `${clientBaseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${clientBaseUrl}/orders/${order.id}`,
-    expires_at: checkoutSessionExpiryUnix(now(), shopPolicy)
-  });
+    expires_at: expiresAt
+  }, { idempotencyKey: `session:${order.id}:${order.stripeCheckoutSessionId ? `after-${order.stripeCheckoutSessionId}` : 'first'}:${expiresAt}` });
   order.stripeCheckoutSessionId = session.id;
   order.reservationExpiresAt = new Date(session.expires_at * 1000);
   await order.save();
@@ -43,30 +42,11 @@ export const createCheckoutSession = asyncHandler(async (req, res) => {
 export const stripeWebhook = async (req, res, next) => {
   try {
     if (!env.stripeWebhookSecret) throw new ApiError(503, 'Stripe webhook is not configured');
-    const event = req.app.locals.getStripe().webhooks.constructEvent(req.body, req.headers['stripe-signature'], env.stripeWebhookSecret);
-    if (await WebhookEvent.exists({ stripeEventId: event.id })) return res.json({ received: true });
-    const session = await mongoose.startSession();
-    try {
-      await session.withTransaction(async () => {
-        await WebhookEvent.create([{ stripeEventId: event.id, type: event.type }], { session });
-        if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
-          const checkout = event.data.object;
-          const order = await Order.findById(checkout.metadata?.orderId).session(session);
-          if (order && order.paymentStatus !== 'paid') {
-            order.paymentStatus = 'paid'; order.status = 'processing'; order.stripePaymentIntentId = checkout.payment_intent;
-            order.statusHistory.push({ status: 'processing' }); await order.save({ session });
-          }
-        }
-        if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
-          const checkout = event.data.object;
-          const order = await Order.findById(checkout.metadata?.orderId).session(session);
-          if (order && isAwaitingPayment(order)) {
-            await restoreOrderInventory(order, session); order.paymentStatus = event.type.endsWith('failed') ? 'failed' : 'unpaid'; order.status = 'cancelled';
-            order.statusHistory.push({ status: 'cancelled' }); await order.save({ session });
-          }
-        }
-      });
-    } finally { await session.endSession(); }
+    const stripe = req.app.locals.getStripe();
+    let event;
+    try { event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], env.stripeWebhookSecret); }
+    catch { throw new ApiError(400, 'Invalid webhook signature', undefined, { code: 'invalid_signature' }); }
+    await handleStripeEvent(event, stripe);
     res.json({ received: true });
   } catch (error) { next(error); }
 };

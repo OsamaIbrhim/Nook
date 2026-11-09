@@ -95,13 +95,31 @@ describe('login', () => {
     }
   });
 
-  it('limits register, login and refresh to 20 requests per client address per window', async () => {
+  it('limits failed logins to 10 per client address per window, the 11th gets 429', async () => {
     const ip = freshIp();
     const attempt = () => api.request('POST', '/api/v1/auth/login', { ip, body: { email: 'nobody@example.test', password: 'Passw0rd-test' } });
-    for (let i = 0; i < 20; i += 1) assert.equal((await attempt()).status, 401);
+    for (let i = 0; i < 10; i += 1) assert.equal((await attempt()).status, 401);
     const limited = await attempt();
     assert.equal(limited.status, 429);
     assert.equal(limited.body.error.message, 'Too many authentication attempts');
+  });
+
+  it('does not count successful logins against the budget: 12 in a row all succeed', async () => {
+    await createUser({ email: 'erin@example.test', password: 'Passw0rd-test' });
+    const ip = freshIp();
+    for (let i = 0; i < 12; i += 1) {
+      const res = await api.request('POST', '/api/v1/auth/login', { ip, body: { email: 'erin@example.test', password: 'Passw0rd-test' } });
+      assert.equal(res.status, 200, `login ${i + 1}`);
+    }
+  });
+});
+
+describe('register limit', () => {
+  it('limits registrations to 20 per client address per window, the 21st gets 429', async () => {
+    const ip = freshIp();
+    const attempt = () => api.request('POST', '/api/v1/auth/register', { ip, body: { name: 'Dup', email: 'dup@example.test', password: 'short' } });
+    for (let i = 0; i < 20; i += 1) assert.equal((await attempt()).status, 400);
+    assert.equal((await attempt()).status, 429);
   });
 });
 
@@ -165,10 +183,17 @@ describe('refresh', () => {
     assert.equal(await RefreshToken.countDocuments({ revokedAt: null }), 0);
   });
 
-  it('KNOWN BUG (B5): a guest with no cookie gets 401 (desired: 204 with no error)', async () => {
+  it('answers a guest with no cookie with 204, no body and no cookie change', async () => {
     const res = await post('/refresh');
-    assert.equal(res.status, 401);
-    assert.equal(res.body.error.message, 'Refresh token required');
+    assert.equal(res.status, 204);
+    assert.equal(res.body, null);
+    assert.deepEqual(res.setCookies, []);
+  });
+
+  it('allows 60 refreshes per client address per window and answers the 61st with 429', async () => {
+    const ip = freshIp();
+    for (let i = 0; i < 60; i += 1) assert.equal((await api.request('POST', '/api/v1/auth/refresh', { ip })).status, 204);
+    assert.equal((await api.request('POST', '/api/v1/auth/refresh', { ip })).status, 429);
   });
 
   it('rejects a garbage cookie and a deactivated user', async () => {
@@ -196,5 +221,33 @@ describe('logout', () => {
 
   it('answers 204 without a cookie', async () => {
     assert.equal((await api.request('POST', '/api/v1/auth/logout')).status, 204);
+  });
+});
+
+describe('Origin check on cookie endpoints', () => {
+  const evil = { origin: 'http://evil.test' };
+
+  it('rejects refresh from a foreign origin with 403 origin_not_allowed and leaves the token usable', async () => {
+    const { cookie } = await registerAlice();
+    const res = await post('/refresh', { cookie, headers: evil });
+    assert.equal(res.status, 403);
+    assert.equal(res.body.error.code, 'origin_not_allowed');
+    assert.equal(await RefreshToken.countDocuments({ revokedAt: null }), 1);
+    assert.equal((await post('/refresh', { cookie })).status, 200);
+  });
+
+  it('rejects logout from a foreign origin and keeps the session', async () => {
+    const { cookie } = await registerAlice();
+    const res = await api.request('POST', '/api/v1/auth/logout', { cookie, headers: evil });
+    assert.equal(res.status, 403);
+    assert.equal(await RefreshToken.countDocuments({ revokedAt: null }), 1);
+  });
+
+  it('accepts the configured client origin and requests that carry no Origin header', async () => {
+    const { cookie } = await registerAlice();
+    const fromClient = await post('/refresh', { cookie, headers: { origin: 'http://localhost:5173' } });
+    assert.equal(fromClient.status, 200);
+    const next = cookieHeader(refreshCookieOf(fromClient));
+    assert.equal((await api.request('POST', '/api/v1/auth/logout', { cookie: next, headers: { origin: 'http://localhost:5173' } })).status, 204);
   });
 });
