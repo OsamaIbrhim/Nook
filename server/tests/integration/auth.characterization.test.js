@@ -166,6 +166,8 @@ describe('refresh', () => {
     const res = await post('/refresh', { cookie });
     assert.equal(res.status, 200);
     assert.equal(typeof res.body.data.accessToken, 'string');
+    assert.equal(res.body.data.user.email, 'alice@example.test');
+    assert.equal('password' in res.body.data.user, false);
     const next = cookieHeader(refreshCookieOf(res));
     assert.notEqual(next, cookie);
     assert.equal(await RefreshToken.countDocuments({ revokedAt: { $ne: null } }), 1);

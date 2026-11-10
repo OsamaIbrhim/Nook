@@ -2,7 +2,7 @@ import { env } from '../config/env.js';
 import { Order } from '../models/Order.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { assertObjectId, requireFields } from '../validators/common.js';
+import { parseCheckoutSessionRequest } from '../validators/payments.js';
 import { handleStripeEvent } from '../services/webhookService.js';
 import { shopPolicy } from '../config/shopPolicy.js';
 import { isAwaitingPayment } from '../domain/orderStatus.js';
@@ -12,9 +12,9 @@ import { checkoutSessionExpiryUnix, isExpired } from '../domain/reservation.js';
 const clientBaseUrl = env.clientUrl.split(',')[0].trim().replace(/\/$/, '');
 
 export const createCheckoutSession = asyncHandler(async (req, res) => {
-  requireFields(req.body, ['orderId']); assertObjectId(req.body.orderId, 'orderId');
+  const { orderId } = parseCheckoutSessionRequest(req.body);
   const { getStripe, now } = req.app.locals;
-  const order = await Order.findOne({ _id: req.body.orderId, user: req.user.id });
+  const order = await Order.findOne({ _id: orderId, user: req.user.id });
   if (!order) throw new ApiError(404, 'Order not found');
   if (!isAwaitingPayment(order)) throw new ApiError(409, 'Order is not eligible for checkout');
   if (isExpired(order, now())) throw new ApiError(409, 'Inventory reservation has expired; cancel this order and create another');

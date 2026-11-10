@@ -11,7 +11,9 @@
     "test": "node --test \"tests/**/*.test.js\"",
     "check": "node --check src/server.js",
     "create-admin": "node src/scripts/createAdmin.js",
-    "seed": "node src/scripts/seed.js"
+    "seed": "node src/scripts/seed.js",
+    "contract": "node src/scripts/buildContract.js",
+    "contract:check": "node src/scripts/buildContract.js --check"
   },
   "engines": {
     "node": ">=22"
@@ -29,7 +31,8 @@
     "mongoose": "^8.16.5",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
-    "stripe": "^18.3.0"
+    "stripe": "^18.3.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@stryker-mutator/core": "^10.1.1",

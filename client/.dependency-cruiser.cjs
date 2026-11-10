@@ -1,13 +1,13 @@
 const featureEdges = {
-  catalog: ['cart'],
-  cart: [],
+  catalog: ['cart', 'policy'],
+  cart: ['policy'],
   checkout: ['cart', 'auth', 'policy'],
-  orders: ['checkout', 'auth'],
+  orders: ['checkout', 'auth', 'policy'],
   auth: [],
   policy: [],
   home: ['catalog', 'policy'],
   shell: ['cart', 'auth', 'catalog', 'policy'],
-  admin: ['auth']
+  admin: ['auth', 'policy']
 }
 
 const edgeRules = Object.entries(featureEdges).map(([feature, allowed]) => ({
@@ -33,6 +33,18 @@ module.exports = {
       severity: 'error',
       from: { path: '^src/shared/' },
       to: { path: '^src/(features|app)/' }
+    },
+    {
+      name: 'app-is-imported-only-by-main',
+      severity: 'error',
+      from: { pathNot: '(^src/(main\\.tsx|app/|test/)|\\.test\\.tsx?$)' },
+      to: { path: '^src/app/' }
+    },
+    {
+      name: 'no-dumping-ground-folders',
+      severity: 'error',
+      from: {},
+      to: { path: '(^|/)(utils|helpers|common|hooks)/' }
     },
     {
       name: 'production-code-does-not-import-tests',

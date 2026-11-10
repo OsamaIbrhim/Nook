@@ -1,15 +1,18 @@
-import { invalidRequest, isProductId } from './common.js';
+import { z } from 'zod';
+import { ObjectId } from '../contract/schemas.js';
+import { parseWith } from './parse.js';
 
 const MAX_IDS = 24;
+const idsMessage = `must be 1 to ${MAX_IDS} comma separated 24 character hex ids`;
+const ProductFilters = z.object({
+  ids: z.array(ObjectId, { error: idsMessage }).min(1, idsMessage).max(MAX_IDS, idsMessage).optional(),
+  exclude: ObjectId.optional()
+});
 
 export function parseProductIdFilters(query) {
-  const fieldErrors = [];
-  let ids;
-  if (query.ids) {
-    ids = typeof query.ids === 'string' ? query.ids.split(',') : [];
-    if (!ids.length || ids.length > MAX_IDS || !ids.every(isProductId)) fieldErrors.push({ field: 'ids', message: `must be 1 to ${MAX_IDS} comma separated 24 character hex ids` });
-  }
-  if (query.exclude && !isProductId(query.exclude)) fieldErrors.push({ field: 'exclude', message: 'must be a 24 character hex id' });
-  if (fieldErrors.length) throw invalidRequest('Invalid product filter', fieldErrors);
-  return { ids: ids?.map((id) => id.toLowerCase()), exclude: query.exclude?.toLowerCase() };
+  const { ids, exclude } = parseWith(ProductFilters, {
+    ids: query.ids ? (typeof query.ids === 'string' ? query.ids.split(',') : []) : undefined,
+    exclude: query.exclude || undefined
+  }, 'Invalid product filter');
+  return { ids: ids?.map((id) => id.toLowerCase()), exclude: exclude?.toLowerCase() };
 }

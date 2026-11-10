@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @theme {
   --color-ink: #17211b;
   --color-forest: #174f3f;
@@ -7,47 +7,129 @@
   --color-coral: #ff5c35;
   --color-acid: #d7ff39;
   --color-violet: #6d63ff;
-  --font-sans: "Arial Narrow", "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Arial Narrow', 'Helvetica Neue', Arial, ui-sans-serif, system-ui, sans-serif;
 }
 @layer base {
-  * { box-sizing: border-box; }
-  html { background: #090909; scroll-behavior: smooth; scroll-padding-top: 110px; }
-  body { margin: 0; color: var(--color-ink); background: #f2efe6; font-family: var(--font-sans); text-rendering: optimizeLegibility; overscroll-behavior-y: none; }
-  ::selection { background: #d7ff39; color: #090909; }
-  button, a { -webkit-tap-highlight-color: transparent; }
-  button { cursor: pointer; }
-  input, select, textarea { outline: none; caret-color: #6d63ff; -webkit-tap-highlight-color: transparent; }
-  textarea { resize: vertical; }
-  input:focus, select:focus, textarea:focus { border-color: rgb(9 9 9 / .28); box-shadow: inset 0 -2px 0 #d7ff39, 0 18px 35px -28px rgb(9 9 9 / .7); }
-  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090909' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 40px !important; }
-  select option { background: #f7f4ec; color: #090909; }
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    background: #090909;
+    scroll-behavior: smooth;
+    scroll-padding-top: 110px;
+  }
+  body {
+    margin: 0;
+    color: var(--color-ink);
+    background: #f2efe6;
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+  }
+  ::selection {
+    background: #d7ff39;
+    color: #090909;
+  }
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button {
+    cursor: pointer;
+  }
+  input,
+  select,
+  textarea {
+    outline: none;
+    caret-color: #6d63ff;
+    -webkit-tap-highlight-color: transparent;
+  }
+  textarea {
+    resize: vertical;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: rgb(9 9 9 / 0.28);
+    box-shadow:
+      inset 0 -2px 0 #d7ff39,
+      0 18px 35px -28px rgb(9 9 9 / 0.7);
+  }
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23090909' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px !important;
+  }
+  select option {
+    background: #f7f4ec;
+    color: #090909;
+  }
 }
 @layer components {
-  .container-app { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
-  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-bold text-white transition hover:bg-violet disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-full border border-black/20 bg-transparent px-5 py-2.5 text-sm font-bold transition hover:border-black hover:bg-black hover:text-white; }
-  .field { @apply w-full rounded-[3px] border border-black/12 bg-white/70 px-4 py-3 text-sm transition duration-200 placeholder:text-black/30 hover:border-black/25 hover:bg-white; }
-  .label { @apply mb-2 block text-[10px] font-black uppercase tracking-[.14em] text-black/55; }
-  .card { @apply rounded-2xl border border-black/6 bg-white shadow-sm; }
+  .container-app {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-bold text-white transition hover:bg-violet disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-black/20 bg-transparent px-5 py-2.5 text-sm font-bold transition hover:border-black hover:bg-black hover:text-white;
+  }
+  .field {
+    @apply w-full rounded-[3px] border border-black/12 bg-white/70 px-4 py-3 text-sm transition duration-200 placeholder:text-black/30 hover:border-black/25 hover:bg-white;
+  }
+  .label {
+    @apply mb-2 block text-[10px] font-black uppercase tracking-[.14em] text-black/55;
+  }
+  .card {
+    @apply rounded-2xl border border-black/6 bg-white shadow-sm;
+  }
 }
 
 @keyframes marquee {
-  to { transform: translateX(-50%); }
+  to {
+    transform: translateX(-50%);
+  }
 }
-.animate-marquee { animation: marquee 28s linear infinite; }
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
 
 @keyframes route-enter {
-  from { opacity: 0; transform: translateY(12px); filter: blur(3px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }
-.route-enter { animation: route-enter .42s cubic-bezier(.22,1,.36,1) both; }
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-.lenis.lenis-stopped { overflow: hidden; }
-.lenis.lenis-smooth iframe { pointer-events: none; }
+.route-enter {
+  animation: route-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -55,7 +137,17 @@ html.lenis, html.lenis body { height: auto; }
   }
 }
 @media (max-width: 640px) {
-  .btn-primary, .btn-secondary { min-height: 44px; }
-  input, select, textarea { font-size: 16px; }
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
-:focus-visible:not(input):not(textarea):not(select) { outline: 2px solid #d7ff39; outline-offset: 3px; }
+:focus-visible:not(input):not(textarea):not(select) {
+  outline: 2px solid #d7ff39;
+  outline-offset: 3px;
+}

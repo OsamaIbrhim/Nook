@@ -47,6 +47,10 @@ jobs:
         working-directory: server
         run: npm test
 
+      - name: Check the OpenAPI document is current
+        working-directory: server
+        run: npm run contract:check
+
       - name: Check backend entry point
         working-directory: server
         run: npm run check
@@ -54,6 +58,10 @@ jobs:
       - name: Install frontend dependencies
         working-directory: client
         run: npm ci
+
+      - name: Check generated API types are current
+        working-directory: client
+        run: npm run contract && git diff --exit-code -- src/shared/contract
 
       - name: Lint frontend
         working-directory: client

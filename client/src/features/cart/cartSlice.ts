@@ -1,27 +1,52 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import type { CartItem, Product } from '../../types'
+import {
+  clampQuantity,
+  isWholeQuantity,
+  MAX_LINES,
+  normalizeId,
+  sameLines,
+  sanitizeLines,
+  type CartLine
+} from './cartLines'
+import { loadCart } from './cartStorage'
 
-const saved = localStorage.getItem('cart')
-const initialState: { items: CartItem[] } = { items: saved ? JSON.parse(saved) : [] }
-const save = (items: CartItem[]) => localStorage.setItem('cart', JSON.stringify(items))
+export type CartState = { lines: CartLine[] }
+
 const cartSlice = createSlice({
-  name: 'cart', initialState,
+  name: 'cart',
+  initialState: (): CartState => ({ lines: loadCart() }),
   reducers: {
-    addToCart(state, action: PayloadAction<{ product: Product; quantity?: number }>) {
-      const found = state.items.find((item) => item.product._id === action.payload.product._id)
-      const amount = action.payload.quantity || 1
-      if (found) found.quantity = Math.min(found.quantity + amount, action.payload.product.stock)
-      else state.items.push({ product: action.payload.product, quantity: Math.min(amount, action.payload.product.stock) })
-      save(state.items)
+    addLine(state, action: PayloadAction<{ productId: string; quantity?: number }>) {
+      const { quantity = 1 } = action.payload
+      const productId = normalizeId(action.payload.productId)
+      if (!isWholeQuantity(quantity)) return
+      const line = state.lines.find((entry) => entry.productId === productId)
+      if (line) line.quantity = clampQuantity(line.quantity + quantity)
+      else if (state.lines.length < MAX_LINES) state.lines.push({ productId, quantity: clampQuantity(quantity) })
     },
-    updateQuantity(state, action: PayloadAction<{ id: string; quantity: number }>) {
-      const item = state.items.find((row) => row.product._id === action.payload.id)
-      if (item) item.quantity = Math.max(1, Math.min(action.payload.quantity, item.product.stock))
-      save(state.items)
+    setQuantity(state, action: PayloadAction<{ productId: string; quantity: number }>) {
+      if (!Number.isInteger(action.payload.quantity)) return
+      const line = state.lines.find((entry) => entry.productId === normalizeId(action.payload.productId))
+      if (line) line.quantity = clampQuantity(action.payload.quantity)
     },
-    removeFromCart(state, action: PayloadAction<string>) { state.items = state.items.filter((item) => item.product._id !== action.payload); save(state.items) },
-    clearCart(state) { state.items = []; save([]) }
+    removeLine(state, action: PayloadAction<string>) {
+      state.lines = state.lines.filter((line) => line.productId !== normalizeId(action.payload))
+    },
+    restoreLine(state, action: PayloadAction<CartLine>) {
+      const [line] = sanitizeLines([action.payload])
+      if (line && state.lines.length < MAX_LINES && !state.lines.some((entry) => entry.productId === line.productId)) {
+        state.lines.push(line)
+      }
+    },
+    clear(state) {
+      state.lines = []
+    },
+    replaceAll(state, action: PayloadAction<CartLine[]>) {
+      const next = sanitizeLines(action.payload)
+      if (!sameLines(state.lines, next)) state.lines = next
+    }
   }
 })
-export const { addToCart, updateQuantity, removeFromCart, clearCart } = cartSlice.actions
+
+export const { addLine, setQuantity, removeLine, restoreLine, clear, replaceAll } = cartSlice.actions
 export default cartSlice.reducer

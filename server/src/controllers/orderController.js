@@ -1,8 +1,8 @@
 import { Order } from '../models/Order.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { assertObjectId, isProductId, requireFields } from '../validators/common.js';
-import { parseOrderFilters } from '../validators/orders.js';
+import { assertObjectId, requireFields } from '../validators/common.js';
+import { parseOrderFilters, parseOrderRequest } from '../validators/orders.js';
 import { pageInfo, readPage } from '../http/paginate.js';
 import { parseIdempotencyKey } from '../validators/idempotency.js';
 import { shopPolicy } from '../config/shopPolicy.js';
@@ -12,23 +12,10 @@ import { presentOrder } from './orderPresenter.js';
 
 const orderNotFound = () => new ApiError(404, 'Order not found', undefined, { code: 'order_not_found' });
 
-function parseLines(items) {
-  return items.map((item) => {
-    if (!isProductId(item?.product)) throw new ApiError(400, 'Invalid product');
-    const quantity = Number.parseInt(item.quantity, 10);
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > shopPolicy.maxLineQuantity) throw new ApiError(400, `Item quantity must be between 1 and ${shopPolicy.maxLineQuantity}`);
-    return { productId: item.product.toLowerCase(), quantity };
-  });
-}
-
 export const createOrder = asyncHandler(async (req, res) => {
-  requireFields(req.body, ['items', 'shippingAddress']);
-  if (!Array.isArray(req.body.items) || !req.body.items.length) throw new ApiError(400, 'Cart must contain at least one item');
-  requireFields(req.body.shippingAddress, ['name', 'line1', 'city', 'postalCode', 'country'], 'shippingAddress.');
+  const { lines, shippingAddress } = parseOrderRequest(req.body, shopPolicy);
   const idempotencyKey = parseIdempotencyKey(req.get('idempotency-key'));
-  const { order, created } = await placeOrder({
-    userId: req.user.id, lines: parseLines(req.body.items), shippingAddress: req.body.shippingAddress, idempotencyKey, now: req.app.locals.now()
-  });
+  const { order, created } = await placeOrder({ userId: req.user.id, lines, shippingAddress, idempotencyKey, now: req.app.locals.now() });
   res.status(created ? 201 : 200).json({ success: true, data: { order: presentOrder(order, req.user.role) } });
 });
 
