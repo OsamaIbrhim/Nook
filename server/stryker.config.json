@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "command",
+  "commandRunner": { "command": "node --test \"tests/domain/*.test.js\"" },
+  "mutate": ["src/domain/**/*.js"],
+  "coverageAnalysis": "off",
+  "reporters": ["clear-text", "json"],
+  "jsonReporter": { "fileName": "../.ai-workspace/reports/2026-11-09-stryker-server-domain.json" },
+  "tempDirName": ".stryker-tmp",
+  "cleanTempDir": true
+}

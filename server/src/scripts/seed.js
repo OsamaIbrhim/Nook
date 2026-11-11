@@ -5,7 +5,8 @@ import { Category } from '../models/Category.js'
 import { Product } from '../models/Product.js'
 import { Order } from '../models/Order.js'
 import { slugify } from '../utils/slugify.js'
-import { env } from '../config/env.js'
+import { shopPolicy } from '../config/shopPolicy.js'
+import { shippingFor } from '../domain/pricing.js'
 
 const categories = [
   ['Home', 'Warm, useful pieces for everyday spaces.'],
@@ -128,15 +129,16 @@ async function seed() {
   for (const sample of orderData) {
     const items = makeItems(sample.indexes)
     const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0)
+    const shipping = shippingFor(subtotal, shopPolicy)
     const createdAt = new Date(Date.now() - sample.daysAgo * 24 * 60 * 60 * 1000)
     await Order.create({
       user: sample.user._id,
       items,
       shippingAddress: { ...address, name: sample.user.name },
       subtotal,
-      shipping: 0,
-      total: subtotal,
-      currency: env.currency,
+      shipping,
+      total: subtotal + shipping,
+      currency: shopPolicy.currency,
       status: sample.status,
       paymentStatus: sample.paymentStatus,
       inventoryReserved: sample.status === 'pending',

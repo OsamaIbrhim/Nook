@@ -4,8 +4,13 @@ import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { slugify } from '../utils/slugify.js';
 import { uploadBuffer, deleteCloudinaryImages } from '../utils/upload.js';
-import { requireFields, assertObjectId, parsePositiveInt } from '../validators/common.js';
+import { requireFields, assertObjectId } from '../validators/common.js';
+import { parseProductIdFilters } from '../validators/catalog.js';
+import { escapeRegExp } from '../text/escapeRegExp.js';
+import { pageInfo, readPage } from '../http/paginate.js';
 
+const MAX_SEARCH_LENGTH = 60;
+const MAX_SEARCH_TERMS = 5;
 const parseBool = (value) => value === true || value === 'true';
 const parseArray = (value, label) => {
   if (value === undefined) return undefined;
@@ -16,9 +21,10 @@ const parseArray = (value, label) => {
 const asNumber = (value, label) => { const n = Number(value); if (!Number.isFinite(n) || n < 0) throw new ApiError(400, `${label} must be a non-negative number`); return n; };
 
 export const listProducts = asyncHandler(async (req, res) => {
-  const page = parsePositiveInt(req.query.page, 1);
-  const limit = parsePositiveInt(req.query.limit, 12, 100);
+  const { page, limit, skip } = readPage(req.query, { defaultLimit: 12, maxLimit: 100 });
   const filter = { isActive: true };
+  const { ids, exclude } = parseProductIdFilters(req.query);
+  if (ids || exclude) filter._id = { ...(ids && { $in: ids }), ...(exclude && { $ne: exclude }) };
   if (req.query.category) {
     const value = String(req.query.category);
     if (/^[a-f\d]{24}$/i.test(value)) filter.category = value;
@@ -32,14 +38,17 @@ export const listProducts = asyncHandler(async (req, res) => {
     if (req.query.minPrice) filter.price.$gte = asNumber(req.query.minPrice, 'minPrice');
     if (req.query.maxPrice) filter.price.$lte = asNumber(req.query.maxPrice, 'maxPrice');
   }
-  if (req.query.search) filter.$text = { $search: String(req.query.search).slice(0, 100) };
+  const searchTerms = String(req.query.search ?? '').slice(0, MAX_SEARCH_LENGTH).split(/\s+/).filter(Boolean).slice(0, MAX_SEARCH_TERMS);
+  if (searchTerms.length) {
+    filter.$and = searchTerms.map((term) => ({ $or: [{ name: new RegExp(`(^|[\\s-])${escapeRegExp(term)}`, 'i') }, { tags: new RegExp(`^${escapeRegExp(term)}`, 'i') }] }));
+  }
   const allowedSorts = { newest: '-createdAt', price_asc: 'price', price_desc: '-price', name: 'name' };
   const sort = allowedSorts[req.query.sort] || '-createdAt';
   const [products, total] = await Promise.all([
-    Product.find(filter).populate('category', 'name slug').sort(sort).skip((page - 1) * limit).limit(limit).lean(),
+    Product.find(filter).populate('category', 'name slug').sort(sort).skip(skip).limit(limit).lean(),
     Product.countDocuments(filter)
   ]);
-  res.json({ success: true, data: { products, pagination: { page, limit, total, pages: Math.ceil(total / limit) } } });
+  res.json({ success: true, data: { products, pagination: pageInfo({ page, limit, total }) } });
 });
 
 export const getProduct = asyncHandler(async (req, res) => {
@@ -58,7 +67,7 @@ export const createProduct = asyncHandler(async (req, res) => {
   }));
   try {
     const product = await Product.create({
-      name: req.body.name, slug: slugify(req.body.name), description: req.body.description,
+      name: req.body.name, slug: slugify(req.body.slug ?? req.body.name), description: req.body.description,
       shortDescription: req.body.shortDescription, sku: req.body.sku, brand: req.body.brand,
       material: req.body.material, dimensions: req.body.dimensions, care: req.body.care,
       benefits: parseArray(req.body.benefits, 'benefits'), tags: parseArray(req.body.tags, 'tags'),
@@ -91,7 +100,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   if (!product.seo) product.seo = {};
   if (req.body.seoTitle !== undefined) product.seo.title = req.body.seoTitle;
   if (req.body.seoDescription !== undefined) product.seo.description = req.body.seoDescription;
-  if (req.body.name) product.slug = slugify(req.body.name);
+  if (req.body.slug !== undefined) product.slug = slugify(req.body.slug);
   for (const key of ['price', 'compareAtPrice', 'stock']) if (req.body[key] !== undefined) product[key] = asNumber(req.body[key], key);
   if (req.body.isActive !== undefined) product.isActive = parseBool(req.body.isActive);
   try { await product.save(); await deleteCloudinaryImages(oldToDelete); res.json({ success: true, data: { product } }); }

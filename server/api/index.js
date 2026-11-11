@@ -2,17 +2,17 @@ import mongoose from 'mongoose'
 import { app } from '../src/app.js'
 import { connectDatabase } from '../src/config/db.js'
 
-let connectionPromise
+const state = (globalThis.nookDatabase ??= {})
 
 async function ensureDatabase() {
     if (mongoose.connection.readyState === 1) return
-    if (!connectionPromise) {
-        connectionPromise = connectDatabase().catch((error) => {
-            connectionPromise = undefined
+    if (!state.connectionPromise) {
+        state.connectionPromise = connectDatabase().catch((error) => {
+            state.connectionPromise = undefined
             throw error
         })
     }
-    await connectionPromise
+    await state.connectionPromise
 }
 
 export default async function handler(req, res) {
@@ -21,6 +21,7 @@ export default async function handler(req, res) {
         return app(req, res)
     } catch (error) {
         console.error('Serverless API initialization failed:', error)
-        return res.status(503).json({ success: false, error: { message: 'API is temporarily unavailable' } })
+        res.setHeader('Retry-After', '5')
+        return res.status(503).json({ success: false, error: { message: 'API is temporarily unavailable', code: 'service_unavailable' } })
     }
 }

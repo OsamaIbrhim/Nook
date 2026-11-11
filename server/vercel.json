@@ -6,6 +6,12 @@
       "destination": "/api"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/v1/internal/jobs/release-reservations",
+      "schedule": "0 3 * * *"
+    }
+  ],
   "functions": {
     "api/index.js": {
       "maxDuration": 30

@@ -2,14 +2,13 @@ import mongoose from 'mongoose';
 import { app } from './app.js';
 import { connectDatabase } from './config/db.js';
 import { env } from './config/env.js';
-import { Order } from './models/Order.js';
-import { releaseExpiredUnstartedReservations } from './services/inventoryService.js';
+import { releaseExpiredReservations } from './services/inventoryService.js';
 
 let server;
 try {
   await connectDatabase();
   server = app.listen(env.port, () => console.log(`API listening on http://localhost:${env.port}`));
-  const cleanup = () => releaseExpiredUnstartedReservations(Order, mongoose).catch((error) => console.error('Reservation cleanup failed:', error));
+  const cleanup = () => releaseExpiredReservations({ now: new Date() }).catch((error) => console.error('Reservation cleanup failed:', error));
   setInterval(cleanup, 60_000).unref();
   cleanup();
 } catch (error) {

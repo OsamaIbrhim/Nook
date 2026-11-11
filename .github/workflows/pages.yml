@@ -18,6 +18,8 @@ jobs:
   quality:
     name: Test and build
     runs-on: ubuntu-latest
+    env:
+      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/.cache/mongodb-binaries
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -25,11 +27,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: |
             client/package-lock.json
             server/package-lock.json
+
+      - name: Cache MongoDB test binary
+        uses: actions/cache@v4
+        with:
+          path: .cache/mongodb-binaries
+          key: mongod-${{ runner.os }}-${{ hashFiles('server/package-lock.json') }}
 
       - name: Install backend dependencies
         working-directory: server
@@ -39,6 +47,10 @@ jobs:
         working-directory: server
         run: npm test
 
+      - name: Check the OpenAPI document is current
+        working-directory: server
+        run: npm run contract:check
+
       - name: Check backend entry point
         working-directory: server
         run: npm run check
@@ -47,9 +59,25 @@ jobs:
         working-directory: client
         run: npm ci
 
+      - name: Check generated API types are current
+        working-directory: client
+        run: npm run contract && git diff --exit-code -- src/shared/contract
+
       - name: Lint frontend
         working-directory: client
         run: npm run lint
+
+      - name: Check frontend module boundaries
+        working-directory: client
+        run: npm run lint:deps
+
+      - name: Typecheck frontend
+        working-directory: client
+        run: npm run typecheck
+
+      - name: Test frontend
+        working-directory: client
+        run: npm test -- --run
 
       - name: Build frontend
         working-directory: client
@@ -81,7 +109,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: client/package-lock.json
 

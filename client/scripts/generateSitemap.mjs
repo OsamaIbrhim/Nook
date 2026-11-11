@@ -15,7 +15,13 @@ try {
     if (!response.ok) throw new Error(`API returned ${response.status}`)
     const payload = await response.json()
     pages = payload.data.pagination.pages
-    for (const product of payload.data.products) urls.push({ path: `/products/${product.slug}`, priority: '0.8', frequency: 'weekly', modified: product.updatedAt })
+    for (const product of payload.data.products)
+      urls.push({
+        path: `/products/${product.slug}`,
+        priority: '0.8',
+        frequency: 'weekly',
+        modified: product.updatedAt
+      })
     page += 1
   }
   console.log(`Sitemap: included ${urls.length - 2} products`)
@@ -23,7 +29,18 @@ try {
   console.warn(`Sitemap: product API unavailable; writing static routes only (${error.message})`)
 }
 
-const body = urls.map((entry) => `  <url><loc>${siteUrl}${entry.path}</loc>${entry.modified ? `<lastmod>${new Date(entry.modified).toISOString()}</lastmod>` : ''}<changefreq>${entry.frequency}</changefreq><priority>${entry.priority}</priority></url>`).join('\n')
+const body = urls
+  .map(
+    (entry) =>
+      `  <url><loc>${siteUrl}${entry.path}</loc>${entry.modified ? `<lastmod>${new Date(entry.modified).toISOString()}</lastmod>` : ''}<changefreq>${entry.frequency}</changefreq><priority>${entry.priority}</priority></url>`
+  )
+  .join('\n')
 await fs.mkdir('public', { recursive: true })
-await fs.writeFile('public/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`)
-await fs.writeFile('public/robots.txt', `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /account\nDisallow: /cart\nDisallow: /checkout\nDisallow: /orders\n\nSitemap: ${siteUrl}/sitemap.xml\n`)
+await fs.writeFile(
+  'public/sitemap.xml',
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`
+)
+await fs.writeFile(
+  'public/robots.txt',
+  `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /account\nDisallow: /cart\nDisallow: /checkout\nDisallow: /orders\n\nSitemap: ${siteUrl}/sitemap.xml\n`
+)

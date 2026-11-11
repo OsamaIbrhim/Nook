@@ -1,0 +1,21 @@
+import type { components } from './api'
+
+type Schemas = components['schemas']
+
+export type Product = Schemas['Product']
+export type ProductImage = Schemas['ProductImage']
+export type Category = Schemas['Category']
+export type CategorySummary = Schemas['CategorySummary']
+export type User = Schemas['User']
+export type Role = User['role']
+export type Address = Schemas['Address']
+export type Order = Schemas['Order']
+export type OrderItem = Order['items'][number]
+export type OrderStatus = Schemas['OrderStatus']
+export type PaymentStatus = Schemas['PaymentStatus']
+export type Pagination = Schemas['Pagination']
+export type Quote = Schemas['Quote']
+export type QuoteLine = Schemas['QuoteLine']
+export type ShopConfig = Schemas['ShopConfig']
+export type OrderRequest = Schemas['OrderRequest']
+export type CheckoutSession = Schemas['CheckoutSession']
