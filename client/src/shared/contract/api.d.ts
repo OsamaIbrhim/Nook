@@ -4,1151 +4,1149 @@
  */
 
 export interface paths {
-  '/products': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['listProducts']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/products/{idOrSlug}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['getProduct']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/categories': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['listCategories']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/shop/config': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['getShopConfig']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/cart/quote': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['quoteCart']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/orders': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['createOrder']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/orders/mine': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['listMyOrders']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/orders/by-session/{sessionId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['getOrderBySession']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/orders/{id}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['getOrder']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/orders/{id}/cancel': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['cancelOrder']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/payments/checkout-session': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['createCheckoutSession']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/auth/register': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['register']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/auth/login': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['login']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/auth/refresh': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['refreshSession']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/auth/logout': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    post: operations['logout']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/auth/me': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations['getMe']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
+    "/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listProducts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/products/{idOrSlug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/shop/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getShopConfig"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cart/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["quoteCart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/by-session/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrderBySession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/payments/checkout-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createCheckoutSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["refreshSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
-export type webhooks = Record<string, never>
+export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    Address: {
-      name: string
-      line1: string
-      line2?: string
-      city: string
-      state?: string
-      postalCode: string
-      country: string
-      phone?: string
-    }
-    AuthSession: {
-      user: components['schemas']['User']
-      accessToken: string
-    }
-    Category: {
-      _id: components['schemas']['ObjectId']
-      name: string
-      slug: string
-      description?: string
-      productCount: number
-      cover: components['schemas']['CoverImage'] | null
-    }
-    CategorySummary: {
-      _id: components['schemas']['ObjectId']
-      name: string
-      slug: string
-    }
-    CheckoutSession: {
-      sessionId: string
-      url: string
-    }
-    CheckoutSessionRequest: {
-      orderId: components['schemas']['ObjectId']
-    }
-    CoverImage: {
-      url: string
-      alt: string
-    }
-    ErrorResponse: {
-      /** @constant */
-      success: false
-      error: {
-        message: string
-        code: string
-        details?: unknown
-        fieldErrors?: {
-          field: string
-          message: string
-        }[]
-      }
-    }
-    LoginRequest: {
-      email: string
-      password: string
-    }
-    ObjectId: string
-    Order: {
-      _id: components['schemas']['ObjectId']
-      code: string
-      user:
-        | components['schemas']['ObjectId']
-        | {
-            _id: components['schemas']['ObjectId']
-            name: string
-            email: string
-          }
-      items: {
-        product: components['schemas']['ObjectId']
-        name: string
-        image?: string
-        unitPrice: number
-        quantity: number
-        lineTotal: number
-      }[]
-      shippingAddress: components['schemas']['Address']
-      subtotal: number
-      shipping: number
-      total: number
-      currency: string
-      status: components['schemas']['OrderStatus']
-      paymentStatus: components['schemas']['PaymentStatus']
-      statusHistory: {
-        status: string
-        /** Format: date-time */
-        at: string
-        note?: string
-      }[]
-      actions: {
-        canPay: boolean
-        canCancel: boolean
-        nextStatuses: components['schemas']['OrderStatus'][]
-      }
-      /** Format: date-time */
-      createdAt: string
-      /** Format: date-time */
-      updatedAt: string
-    }
-    OrderRequest: {
-      items: {
-        product: components['schemas']['ObjectId']
-        quantity: number
-      }[]
-      shippingAddress: {
-        name: string
-        line1: string
-        line2?: string
-        city: string
-        state?: string
-        postalCode: string
-        country: string
-        phone?: string
-      }
-    }
-    /** @enum {string} */
-    OrderStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-    Pagination: {
-      page: number
-      limit: number
-      total: number
-      pages: number
-    }
-    /** @enum {string} */
-    PaymentStatus: 'unpaid' | 'paid' | 'failed' | 'refunded'
-    Product: {
-      _id: components['schemas']['ObjectId']
-      name: string
-      slug: string
-      description: string
-      shortDescription?: string
-      sku?: string
-      brand?: string
-      material?: string
-      dimensions?: string
-      care?: string
-      benefits?: string[]
-      tags?: string[]
-      seo?: {
-        title?: string
-        description?: string
-      }
-      price: number
-      compareAtPrice?: number
-      stock: number
-      category: components['schemas']['CategorySummary']
-      images: components['schemas']['ProductImage'][]
-      isActive: boolean
-      /** Format: date-time */
-      createdAt: string
-      /** Format: date-time */
-      updatedAt: string
-    }
-    ProductImage: {
-      url: string
-      publicId: string
-      alt: string
-    }
-    Quote: {
-      currency: string
-      lines: components['schemas']['QuoteLine'][]
-      subtotal: number
-      shipping: number
-      total: number
-      freeShippingThreshold: number | null
-      freeShippingRemaining: number | null
-      checkoutAllowed: boolean
-    }
-    QuoteLine: {
-      productId: components['schemas']['ObjectId']
-      slug: string | null
-      name: string | null
-      image: components['schemas']['CoverImage'] | null
-      category: {
-        name: string
-        slug: string
-      } | null
-      unitPrice: number | null
-      compareAtPrice: number | null
-      requestedQuantity: number
-      quantity: number
-      maxQuantity: number
-      lineTotal: number
-      /** @enum {string} */
-      status: 'ok' | 'adjusted' | 'unavailable'
-      issue: ('stock_reduced' | 'quantity_capped' | 'out_of_stock' | 'inactive' | 'not_found') | null
-    }
-    QuoteRequest: {
-      lines: {
-        productId: components['schemas']['ObjectId']
-        quantity: number
-      }[]
-    }
-    RegisterRequest: {
-      name: string
-      email: string
-      password: string
-    }
-    ShopConfig: {
-      currency: string
-      locale: string
-      freeShippingThreshold: number | null
-      flatShippingRate: number
-      returnWindowDays: number
-      dispatchDaysMin: number
-      dispatchDaysMax: number
-      maxLineQuantity: number
-      reservationMinutes: number
-      supportEmail: string
-      shipsTo: string[]
-    }
-    User: {
-      _id: components['schemas']['ObjectId']
-      name: string
-      email: string
-      /** @enum {string} */
-      role: 'customer' | 'admin'
-      isActive: boolean
-      /** Format: date-time */
-      createdAt: string
-    }
-  }
-  responses: never
-  parameters: never
-  requestBodies: never
-  headers: never
-  pathItems: never
+    schemas: {
+        Address: {
+            name: string;
+            line1: string;
+            line2?: string;
+            city: string;
+            state?: string;
+            postalCode: string;
+            country: string;
+            phone?: string;
+        };
+        AuthSession: {
+            user: components["schemas"]["User"];
+            accessToken: string;
+        };
+        Category: {
+            _id: components["schemas"]["ObjectId"];
+            name: string;
+            slug: string;
+            description?: string;
+            productCount: number;
+            cover: components["schemas"]["CoverImage"] | null;
+        };
+        CategorySummary: {
+            _id: components["schemas"]["ObjectId"];
+            name: string;
+            slug: string;
+        };
+        CheckoutSession: {
+            sessionId: string;
+            url: string;
+        };
+        CheckoutSessionRequest: {
+            orderId: components["schemas"]["ObjectId"];
+        };
+        CoverImage: {
+            url: string;
+            alt: string;
+        };
+        ErrorResponse: {
+            /** @constant */
+            success: false;
+            error: {
+                message: string;
+                code: string;
+                details?: unknown;
+                fieldErrors?: {
+                    field: string;
+                    message: string;
+                }[];
+            };
+        };
+        LoginRequest: {
+            email: string;
+            password: string;
+        };
+        ObjectId: string;
+        Order: {
+            _id: components["schemas"]["ObjectId"];
+            code: string;
+            user: components["schemas"]["ObjectId"] | {
+                _id: components["schemas"]["ObjectId"];
+                name: string;
+                email: string;
+            };
+            items: {
+                product: components["schemas"]["ObjectId"];
+                name: string;
+                image?: string;
+                unitPrice: number;
+                quantity: number;
+                lineTotal: number;
+            }[];
+            shippingAddress: components["schemas"]["Address"];
+            subtotal: number;
+            shipping: number;
+            total: number;
+            currency: string;
+            status: components["schemas"]["OrderStatus"];
+            paymentStatus: components["schemas"]["PaymentStatus"];
+            statusHistory: {
+                status: string;
+                /** Format: date-time */
+                at: string;
+                note?: string;
+            }[];
+            actions: {
+                canPay: boolean;
+                canCancel: boolean;
+                nextStatuses: components["schemas"]["OrderStatus"][];
+            };
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        OrderRequest: {
+            items: {
+                product: components["schemas"]["ObjectId"];
+                quantity: number;
+            }[];
+            shippingAddress: {
+                name: string;
+                line1: string;
+                line2?: string;
+                city: string;
+                state?: string;
+                postalCode: string;
+                country: string;
+                phone?: string;
+            };
+        };
+        /** @enum {string} */
+        OrderStatus: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+        Pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            pages: number;
+        };
+        /** @enum {string} */
+        PaymentStatus: "unpaid" | "paid" | "failed" | "refunded";
+        Product: {
+            _id: components["schemas"]["ObjectId"];
+            name: string;
+            slug: string;
+            description: string;
+            shortDescription?: string;
+            sku?: string;
+            brand?: string;
+            material?: string;
+            dimensions?: string;
+            care?: string;
+            benefits?: string[];
+            tags?: string[];
+            seo?: {
+                title?: string;
+                description?: string;
+            };
+            price: number;
+            compareAtPrice?: number;
+            stock: number;
+            category: components["schemas"]["CategorySummary"];
+            images: components["schemas"]["ProductImage"][];
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ProductImage: {
+            url: string;
+            publicId: string;
+            alt: string;
+        };
+        Quote: {
+            currency: string;
+            lines: components["schemas"]["QuoteLine"][];
+            subtotal: number;
+            shipping: number;
+            total: number;
+            freeShippingThreshold: number | null;
+            freeShippingRemaining: number | null;
+            checkoutAllowed: boolean;
+        };
+        QuoteLine: {
+            productId: components["schemas"]["ObjectId"];
+            slug: string | null;
+            name: string | null;
+            image: components["schemas"]["CoverImage"] | null;
+            category: {
+                name: string;
+                slug: string;
+            } | null;
+            unitPrice: number | null;
+            compareAtPrice: number | null;
+            requestedQuantity: number;
+            quantity: number;
+            maxQuantity: number;
+            lineTotal: number;
+            /** @enum {string} */
+            status: "ok" | "adjusted" | "unavailable";
+            issue: ("stock_reduced" | "quantity_capped" | "out_of_stock" | "inactive" | "not_found") | null;
+        };
+        QuoteRequest: {
+            lines: {
+                productId: components["schemas"]["ObjectId"];
+                quantity: number;
+            }[];
+        };
+        RegisterRequest: {
+            name: string;
+            email: string;
+            password: string;
+        };
+        ShopConfig: {
+            currency: string;
+            locale: string;
+            freeShippingThreshold: number | null;
+            flatShippingRate: number;
+            returnWindowDays: number;
+            dispatchDaysMin: number;
+            dispatchDaysMax: number;
+            maxLineQuantity: number;
+            reservationMinutes: number;
+            supportEmail: string;
+            shipsTo: string[];
+        };
+        User: {
+            _id: components["schemas"]["ObjectId"];
+            name: string;
+            email: string;
+            /** @enum {string} */
+            role: "customer" | "admin";
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
-export type $defs = Record<string, never>
+export type $defs = Record<string, never>;
 export interface operations {
-  listProducts: {
-    parameters: {
-      query?: {
-        page?: number
-        limit?: number
-        /** @description Word-prefix match on name and tags */
-        search?: string
-        /** @description Category slug or id */
-        category?: string
-        minPrice?: number
-        maxPrice?: number
-        sort?: 'newest' | 'price_asc' | 'price_desc' | 'name'
-        /** @description Comma separated product ids, 1 to 24 */
-        ids?: string
-        exclude?: components['schemas']['ObjectId']
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Active products */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              products: components['schemas']['Product'][]
-              pagination: components['schemas']['Pagination']
-            }
-          }
-        }
-      }
-      /** @description Invalid filter */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  getProduct: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        idOrSlug: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description One active product */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              product: components['schemas']['Product']
-            }
-          }
-        }
-      }
-      /** @description Unknown or inactive product */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  listCategories: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description All categories */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              categories: components['schemas']['Category'][]
-            }
-          }
-        }
-      }
-    }
-  }
-  getShopConfig: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Storefront policy */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: components['schemas']['ShopConfig']
-          }
-        }
-      }
-    }
-  }
-  quoteCart: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['QuoteRequest']
-      }
-    }
-    responses: {
-      /** @description Priced cart */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: components['schemas']['Quote']
-          }
-        }
-      }
-      /** @description Invalid cart */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description Rate limited */
-      429: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  createOrder: {
-    parameters: {
-      query?: never
-      header?: {
-        'Idempotency-Key'?: string
-      }
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['OrderRequest']
-      }
-    }
-    responses: {
-      /** @description The order created earlier with the same Idempotency-Key */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              order: components['schemas']['Order']
-            }
-          }
-        }
-      }
-      /** @description Order created */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              order: components['schemas']['Order']
-            }
-          }
-        }
-      }
-      /** @description Invalid request */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description Not signed in */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description Insufficient stock or Idempotency-Key reused with another body */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  listMyOrders: {
-    parameters: {
-      query?: {
-        page?: number
-        limit?: number
-      }
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The caller's orders, newest first */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              orders: components['schemas']['Order'][]
-              pagination: components['schemas']['Pagination']
-            }
-          }
-        }
-      }
-      /** @description Not signed in */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  getOrderBySession: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        sessionId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The caller's order for a Stripe Checkout session */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              order: components['schemas']['Order']
-            }
-          }
-        }
-      }
-      /** @description No such order for the caller */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  getOrder: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: components['schemas']['ObjectId']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description One order */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              order: components['schemas']['Order']
-            }
-          }
-        }
-      }
-      /** @description No such order for the caller */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  cancelOrder: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        id: components['schemas']['ObjectId']
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The cancelled order */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              order: components['schemas']['Order']
-            }
-          }
-        }
-      }
-      /** @description No such order for the caller */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description Order cannot be cancelled */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  createCheckoutSession: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CheckoutSessionRequest']
-      }
-    }
-    responses: {
-      /** @description The order's open session */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: components['schemas']['CheckoutSession']
-          }
-        }
-      }
-      /** @description A new session */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: components['schemas']['CheckoutSession']
-          }
-        }
-      }
-      /** @description No such order for the caller */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description Order is not payable */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  register: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RegisterRequest']
-      }
-    }
-    responses: {
-      /** @description Account created; the refresh token is set as a cookie */
-      201: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: components['schemas']['AuthSession']
-          }
-        }
-      }
-      /** @description Invalid request */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description Email already registered */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  login: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['LoginRequest']
-      }
-    }
-    responses: {
-      /** @description Signed in; the refresh token is set as a cookie */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: components['schemas']['AuthSession']
-          }
-        }
-      }
-      /** @description Invalid request */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description Wrong email or password */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  refreshSession: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The user and a new access token */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: components['schemas']['AuthSession']
-          }
-        }
-      }
-      /** @description No refresh cookie: the caller is a guest */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description Invalid, expired or reused refresh token */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  logout: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description Signed out */
-      204: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-    }
-  }
-  getMe: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description The signed-in user */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': {
-            /** @constant */
-            success: true
-            data: {
-              user: components['schemas']['User']
-            }
-          }
-        }
-      }
-      /** @description Not signed in */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
+    listProducts: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                /** @description Word-prefix match on name and tags */
+                search?: string;
+                /** @description Category slug or id */
+                category?: string;
+                minPrice?: number;
+                maxPrice?: number;
+                sort?: "newest" | "price_asc" | "price_desc" | "name";
+                /** @description Comma separated product ids, 1 to 24 */
+                ids?: string;
+                exclude?: components["schemas"]["ObjectId"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active products */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            products: components["schemas"]["Product"][];
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            /** @description Invalid filter */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrSlug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One active product */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            product: components["schemas"]["Product"];
+                        };
+                    };
+                };
+            };
+            /** @description Unknown or inactive product */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All categories */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            categories: components["schemas"]["Category"][];
+                        };
+                    };
+                };
+            };
+        };
+    };
+    getShopConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Storefront policy */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["ShopConfig"];
+                    };
+                };
+            };
+        };
+    };
+    quoteCart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Priced cart */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["Quote"];
+                    };
+                };
+            };
+            /** @description Invalid cart */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createOrder: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderRequest"];
+            };
+        };
+        responses: {
+            /** @description The order created earlier with the same Idempotency-Key */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            order: components["schemas"]["Order"];
+                        };
+                    };
+                };
+            };
+            /** @description Order created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            order: components["schemas"]["Order"];
+                        };
+                    };
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not signed in */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Insufficient stock or Idempotency-Key reused with another body */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listMyOrders: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's orders, newest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            orders: components["schemas"]["Order"][];
+                            pagination: components["schemas"]["Pagination"];
+                        };
+                    };
+                };
+            };
+            /** @description Not signed in */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getOrderBySession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's order for a Stripe Checkout session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            order: components["schemas"]["Order"];
+                        };
+                    };
+                };
+            };
+            /** @description No such order for the caller */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["ObjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One order */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            order: components["schemas"]["Order"];
+                        };
+                    };
+                };
+            };
+            /** @description No such order for the caller */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cancelOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["ObjectId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The cancelled order */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            order: components["schemas"]["Order"];
+                        };
+                    };
+                };
+            };
+            /** @description No such order for the caller */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Order cannot be cancelled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createCheckoutSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutSessionRequest"];
+            };
+        };
+        responses: {
+            /** @description The order's open session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["CheckoutSession"];
+                    };
+                };
+            };
+            /** @description A new session */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["CheckoutSession"];
+                    };
+                };
+            };
+            /** @description No such order for the caller */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Order is not payable */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterRequest"];
+            };
+        };
+        responses: {
+            /** @description Account created; the refresh token is set as a cookie */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["AuthSession"];
+                    };
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Email already registered */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Signed in; the refresh token is set as a cookie */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["AuthSession"];
+                    };
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Wrong email or password */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    refreshSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The user and a new access token */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: components["schemas"]["AuthSession"];
+                    };
+                };
+            };
+            /** @description No refresh cookie: the caller is a guest */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid, expired or reused refresh token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed out */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The signed-in user */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        success: true;
+                        data: {
+                            user: components["schemas"]["User"];
+                        };
+                    };
+                };
+            };
+            /** @description Not signed in */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
 }
