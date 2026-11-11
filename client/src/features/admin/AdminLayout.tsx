@@ -2,7 +2,7 @@ import { ArrowLeft, LayoutDashboard, Package, ReceiptText, Users } from 'lucide-
 import { Suspense } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Seo } from '../../shared/seo/Seo'
-import { SmoothScroll } from '../../shared/motion/SmoothScroll'
+import { ScrollReset } from '../../shared/motion/ScrollReset'
 import { RouteFallback } from '../../shared/ui/RouteFallback'
 const items = [
   [LayoutDashboard, 'Overview', '/admin'],
@@ -14,7 +14,7 @@ export function AdminLayout() {
   const location = useLocation()
   return (
     <>
-      <SmoothScroll />
+      <ScrollReset />
       <Seo page="admin" path="/admin" />
       <div className="min-h-screen bg-[#f4f5f2]">
         <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col bg-ink p-5 text-white lg:flex">

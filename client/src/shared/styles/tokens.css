@@ -1,0 +1,86 @@
+@theme {
+  --color-paper: #f4f0e8;
+  --color-paper-raised: #fbf9f4;
+  --color-paper-sunken: #e8e2d6;
+  --color-ink: #1b1a17;
+  --color-ink-muted: #5b564c;
+  --color-ink-subtle: #656054;
+  --color-line: #d9d2c4;
+  --color-line-strong: #8a8373;
+  --color-accent: #9a4528;
+  --color-accent-hover: #7e3720;
+  --color-on-accent: #fbf9f4;
+  --color-danger: #b3261e;
+  --color-success: #2e6b4a;
+  --color-inverse: #1b1a17;
+  --color-on-inverse: #f4f0e8;
+  --color-on-inverse-muted: #b9b2a3;
+  --color-accent-on-inverse: #e08a68;
+  --color-line-inverse: #3a372f;
+  --color-scrim: rgb(27 26 23 / 0.48);
+
+  --font-display: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-sans: 'Hanken Grotesk Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.2;
+  --text-eyebrow--letter-spacing: 0.14em;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.45;
+  --text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --text-lead--line-height: 1.55;
+  --text-title: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+  --text-title--line-height: 1.2;
+  --text-h3: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+  --text-h3--line-height: 1.1;
+  --text-h2: clamp(2.25rem, 1.6rem + 2.8vw, 4rem);
+  --text-h2--line-height: 1.04;
+  --text-h1: clamp(2.75rem, 1.6rem + 4.8vw, 5.5rem);
+  --text-h1--line-height: 0.98;
+  --text-hero: clamp(3.25rem, 1.2rem + 8.4vw, 8.5rem);
+  --text-hero--line-height: 0.92;
+
+  --shadow-overlay: 0 24px 48px -24px rgb(27 26 23 / 0.28);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Admin and not-yet-redesigned pages still reference these names; remove with the admin phase. */
+@theme {
+  --color-forest: var(--color-ink);
+  --color-mint: var(--color-paper-sunken);
+  --color-cream: var(--color-paper);
+  --color-coral: var(--color-accent);
+  --color-acid: var(--color-paper-sunken);
+  --color-violet: var(--color-ink-muted);
+}
+
+:root {
+  --page-margin: clamp(1rem, 0.35rem + 2.8vw, 3rem);
+  --grid-gap: clamp(0.75rem, 0.4rem + 1.2vw, 1.5rem);
+  --section-gap: clamp(4rem, 2.4rem + 6vw, 8.5rem);
+  --content-max: 90rem;
+  --announce-h: 2.25rem;
+  --header-h: 4rem;
+  --dur-instant: 100ms;
+  --dur-fast: 180ms;
+  --dur-base: 320ms;
+  --dur-slow: 600ms;
+  --dur-ambient: 1200ms;
+  --reveal-y: 16px;
+  --focus: var(--color-ink);
+}
+@media (max-width: 47.99rem) {
+  :root {
+    --header-h: 3.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --reveal-y: 0px;
+    --dur-slow: 160ms;
+    --dur-ambient: 0ms;
+    --dur-base: 160ms;
+  }
+}

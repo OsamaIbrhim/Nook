@@ -137,7 +137,7 @@ describe('CheckoutPage', () => {
     renderCheckout()
     const summary = await screen.findByRole('complementary')
     await waitFor(() => expect(within(summary).getByText('Free')).toBeInTheDocument())
-    expect(within(summary).getByText('Total').parentElement).toHaveTextContent(/EGP.248.00/)
+    await waitFor(() => expect(within(summary).getByText('Total').parentElement).toHaveTextContent(/EGP.248.00/))
   })
 
   it('creates the order with an Idempotency-Key and the cart lines, then opens the payment page', async () => {

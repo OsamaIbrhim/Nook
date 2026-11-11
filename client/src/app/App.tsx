@@ -8,7 +8,11 @@ export default function App() {
     <>
       <RouterProvider router={router} />
       <NetworkBanner />
-      <Toaster richColors closeButton position="top-right" />
+      <Toaster
+        closeButton
+        position="bottom-right"
+        toastOptions={{ unstyled: false, className: '!rounded-none !border-ink !bg-paper-raised !text-ink' }}
+      />
     </>
   )
 }

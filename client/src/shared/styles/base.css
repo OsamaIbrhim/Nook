@@ -1,0 +1,131 @@
+@layer base {
+  html {
+    color-scheme: light;
+    background: var(--color-paper);
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+    scroll-padding-bottom: 5rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    margin: 0;
+    color: var(--color-ink);
+    background: var(--color-paper);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    font-synthesis: none;
+    font-optical-sizing: auto;
+    font-variant-numeric: lining-nums;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-wrap: balance;
+  }
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button {
+    cursor: pointer;
+  }
+  textarea {
+    resize: vertical;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231b1a17' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px !important;
+  }
+}
+
+@layer components {
+  .container-app {
+    @apply mx-auto w-full max-w-(--content-max) px-(--page-margin);
+  }
+  .surface-inverse {
+    --focus: var(--color-paper);
+    background: var(--color-inverse);
+    color: var(--color-on-inverse);
+  }
+  .eyebrow {
+    @apply text-eyebrow font-medium uppercase text-ink-muted;
+  }
+  .btn-primary,
+  .btn-secondary {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 border border-ink px-6 text-[0.8125rem] font-medium uppercase leading-none tracking-[0.08em] transition-colors duration-(--dur-fast) ease-(--ease-out) active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45;
+  }
+  .btn-primary {
+    @apply bg-ink text-paper;
+  }
+  .btn-secondary {
+    @apply bg-transparent text-ink;
+  }
+  .link-text {
+    @apply underline decoration-1 underline-offset-4 transition-colors duration-(--dur-fast);
+  }
+  .field {
+    @apply w-full border border-line-strong bg-paper-raised px-4 py-3 text-base text-ink placeholder:text-ink-subtle focus:border-ink;
+  }
+  .label {
+    @apply mb-2 block text-eyebrow font-medium uppercase text-ink-muted;
+  }
+  .card {
+    @apply border border-line bg-paper-raised;
+  }
+  .plate {
+    @apply overflow-hidden bg-paper-sunken;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover:not(:disabled) {
+      @apply bg-ink-muted;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      @apply bg-ink text-paper;
+    }
+    .link-text:hover {
+      @apply text-accent;
+    }
+  }
+}
+
+@keyframes hero-settle {
+  from {
+    transform: scale(1.04);
+  }
+}
+.hero-settle {
+  animation: hero-settle var(--dur-ambient) var(--ease-out) both;
+}
+@keyframes route-enter {
+  from {
+    opacity: 0;
+  }
+}
+.route-enter {
+  animation: route-enter 240ms var(--ease-in-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-enter,
+  .hero-settle {
+    animation: none;
+  }
+}

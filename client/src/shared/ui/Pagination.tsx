@@ -1,5 +1,3 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-
 export function Pagination({
   page,
   pages,
@@ -11,30 +9,19 @@ export function Pagination({
 }) {
   if (pages <= 1) return null
   const change = (nextPage: number) => {
-    if (nextPage === page || nextPage < 1 || nextPage > pages) return
     onChange(nextPage)
-    requestAnimationFrame(() => window.dispatchEvent(new Event('nook:scroll-top')))
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
   return (
-    <nav aria-label="Product pagination" className="mt-10 flex items-center justify-center gap-3">
-      <button
-        className="btn-secondary !p-2.5"
-        disabled={page === 1}
-        onClick={() => change(page - 1)}
-        aria-label="Previous page"
-      >
-        <ChevronLeft size={18} />
+    <nav aria-label="Pagination" className="mt-14 flex items-center justify-between border-t border-line pt-6">
+      <button type="button" className="btn-secondary" disabled={page <= 1} onClick={() => change(page - 1)}>
+        Previous
       </button>
-      <span className="min-w-24 text-center text-sm text-black/60" aria-live="polite">
-        Page <b className="text-ink">{page}</b> of {pages}
-      </span>
-      <button
-        className="btn-secondary !p-2.5"
-        disabled={page === pages}
-        onClick={() => change(page + 1)}
-        aria-label="Next page"
-      >
-        <ChevronRight size={18} />
+      <p className="text-sm text-ink-muted" aria-live="polite">
+        Page {page} of {pages}
+      </p>
+      <button type="button" className="btn-secondary" disabled={page >= pages} onClick={() => change(page + 1)}>
+        Next
       </button>
     </nav>
   )

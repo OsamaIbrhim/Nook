@@ -80,11 +80,14 @@ afterEach(() => {
 })
 
 describe('ProductsPage', () => {
-  it('a category link and the select agree: ?category=home selects Home and asks the API for the home slug', async () => {
+  it('marks the category from the URL as current: ?category=home highlights Home and asks the API for the home slug', async () => {
     server.use(...catalog(() => envelope(page([product('Ripple Mug', 'home')]))))
     renderListing('/products?category=home')
     expect(await screen.findByRole('link', { name: /Ripple Mug/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Category\s*Home/ })).toBeInTheDocument()
+    const categories = screen.getByRole('navigation', { name: 'Categories' })
+    expect(await within(categories).findByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page')
+    expect(within(categories).getByRole('link', { name: 'Kitchen' })).not.toHaveAttribute('aria-current')
+    expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toBeInTheDocument()
     expect(seen[0].get('category')).toBe('home')
   })
 
@@ -92,8 +95,8 @@ describe('ProductsPage', () => {
     server.use(...catalog(() => envelope(page([product('Ripple Mug', 'home')]))))
     renderListing('/products?category=home&page=3')
     await screen.findByRole('link', { name: /Ripple Mug/ })
-    await userEvent.click(screen.getByRole('button', { name: /Category/ }))
-    await userEvent.click(screen.getByRole('option', { name: 'Kitchen' }))
+    const categories = screen.getByRole('navigation', { name: 'Categories' })
+    await userEvent.click(await within(categories).findByRole('link', { name: 'Kitchen' }))
     await waitFor(() => expect(screen.getByLabelText('current url')).toHaveTextContent('/products?category=kitchen'))
     await waitFor(() => expect(seen.at(-1)?.get('category')).toBe('kitchen'))
     expect(seen.at(-1)?.has('page')).toBe(false)
@@ -108,8 +111,7 @@ describe('ProductsPage', () => {
     )
     renderListing('/products')
     await screen.findByRole('link', { name: /Ripple Mug/ })
-    await userEvent.click(screen.getByRole('button', { name: /Sort/ }))
-    await userEvent.click(screen.getByRole('option', { name: 'Name A–Z' }))
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Sort' }), 'Name A to Z')
     const grid = screen.getByRole('link', { name: /Ripple Mug/ }).closest('[aria-busy]') as HTMLElement
     await waitFor(() => expect(grid).toHaveAttribute('aria-busy', 'true'))
     expect(screen.queryByLabelText('Loading products')).not.toBeInTheDocument()
@@ -139,7 +141,7 @@ describe('ProductsPage', () => {
     server.use(...catalog(() => envelope(page([product('Ripple Mug', 'home')]))))
     renderListing('/products?page=2')
     await screen.findByRole('link', { name: /Ripple Mug/ })
-    await userEvent.type(screen.getByRole('textbox', { name: 'Search products' }), '  mu ')
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Search the collection' }), '  mu ')
     await waitFor(() => expect(screen.getByLabelText('current url')).toHaveTextContent('/products?search=mu'), {
       timeout: 2000
     })
@@ -147,9 +149,24 @@ describe('ProductsPage', () => {
     await waitFor(() => expect(seen.at(-1)?.get('search')).toBe('mu'))
   })
 
-  it('says so when nothing matches', async () => {
-    server.use(...catalog(() => envelope(page([]))))
-    renderListing('/products?search=zzz')
-    expect(await screen.findByRole('heading', { name: 'No products found' })).toBeInTheDocument()
+  it('says what did not match and offers to clear the filters, which returns to the full collection', async () => {
+    server.use(...catalog((params) => envelope(page(params.get('search') ? [] : [product('Ripple Mug', 'home')]))))
+    renderListing('/products?search=zzz&category=home')
+    expect(await screen.findByRole('heading', { name: 'Nothing matches “zzz”.' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('link', { name: 'Clear filters' }))
+    expect(await screen.findByRole('link', { name: /Ripple Mug/ })).toBeInTheDocument()
+    expect(screen.getByLabelText('current url')).toHaveTextContent(/^\/products$/)
+  })
+
+  it('announces how many objects match: 1 object in Home, 2 objects in the whole collection', async () => {
+    const mug = product('Ripple Mug', 'home')
+    server.use(
+      ...catalog((params) => envelope(page(params.get('category') ? [mug] : [mug, product('Oak Tray', 'kitchen')])))
+    )
+    renderListing('/products?category=home')
+    expect(await screen.findByText('1 object')).toHaveAttribute('role', 'status')
+    const categories = screen.getByRole('navigation', { name: 'Categories' })
+    await userEvent.click(await within(categories).findByRole('link', { name: 'All' }))
+    expect(await screen.findByText('2 objects')).toBeInTheDocument()
   })
 })

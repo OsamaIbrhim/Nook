@@ -1,71 +1,86 @@
-import { Plus } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { toast } from 'sonner'
+import { Check, Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { addLine } from '../../cart'
+import { Link } from 'react-router-dom'
 import type { Product } from '../../../shared/contract/types'
-import { useMoney } from '../../policy'
 import { mediaUrl } from '../../../shared/media/imageUrl'
+import { addLine } from '../../cart'
+import { useMoney } from '../../policy'
 
-export function ProductCard({ product }: { product: Product }) {
+const ADDED_FEEDBACK_MS = 1600
+
+export function ProductCard({ product, eager = false }: { product: Product; eager?: boolean }) {
   const money = useMoney()
   const dispatch = useDispatch()
+  const [added, setAdded] = useState(false)
+  const image = product.images[0]
+  const soldOut = product.stock <= 0
+  const onSale = Boolean(product.compareAtPrice && product.compareAtPrice > product.price)
+
+  useEffect(() => {
+    if (!added) return
+    const timer = window.setTimeout(() => setAdded(false), ADDED_FEEDBACK_MS)
+    return () => window.clearTimeout(timer)
+  }, [added])
+
   const add = () => {
     dispatch(addLine({ productId: product._id }))
-    toast.success(`${product.name} added to your bag`)
+    setAdded(true)
   }
+
   return (
     <article className="group relative">
-      <Link
-        to={`/products/${product.slug}`}
-        className="relative block aspect-[4/5] overflow-hidden rounded-[2px] bg-[#d9d7cf]"
-      >
-        {product.images[0] ? (
+      <div className="plate relative aspect-[4/5]">
+        {image ? (
           <img
-            src={mediaUrl(product.images[0].url)}
-            alt={product.images[0].alt || product.name}
-            className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
+            src={mediaUrl(image.url)}
+            alt={image.alt || product.name}
+            width={800}
+            height={1000}
+            loading={eager ? 'eager' : 'lazy'}
+            decoding="async"
+            className={`h-full w-full object-cover object-[50%_55%] ${soldOut ? 'opacity-70' : ''}`}
           />
         ) : (
-          <div className="grid h-full place-items-center text-xs uppercase tracking-widest text-black/35">
-            Image pending
-          </div>
+          <p className="grid h-full place-items-center text-caption text-ink-subtle">Image coming soon</p>
         )}
-        <span className="absolute left-3 top-3 rounded-full bg-black/75 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.16em] text-white backdrop-blur">
-          {product.stock ? 'Available' : 'Sold out'}
-        </span>
-        <button
-          onClick={(event) => {
-            event.preventDefault()
-            add()
-          }}
-          disabled={!product.stock}
-          className="absolute bottom-3 right-3 grid size-11 translate-y-2 place-items-center rounded-full bg-[#d7ff39] text-black opacity-0 shadow-xl transition duration-300 hover:rotate-90 disabled:opacity-40 group-hover:translate-y-0 group-hover:opacity-100 focus:translate-y-0 focus:opacity-100"
-          aria-label={`Add ${product.name} to cart`}
-        >
-          <Plus size={20} />
-        </button>
-      </Link>
-      <div className="flex items-start justify-between gap-3 border-t border-black/20 bg-[#f2efe6] px-1 pb-2 pt-3 text-black">
+        {(soldOut || onSale) && (
+          <span
+            className={`absolute left-3 top-3 rounded-[2px] px-2 py-1 text-eyebrow font-medium uppercase ${soldOut ? 'bg-paper-raised text-ink' : 'bg-accent text-on-accent'}`}
+          >
+            {soldOut ? 'Sold out' : 'Sale'}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col gap-1 pt-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[.18em] text-black/45">
-            {product.category?.name || 'Nook object'}
-          </p>
+          <p className="eyebrow">{product.category.name}</p>
           <Link
             to={`/products/${product.slug}`}
-            className="mt-1 block truncate text-sm font-bold uppercase tracking-tight hover:underline"
+            className="mt-1 block truncate text-sm font-medium after:absolute after:inset-0"
           >
             {product.name}
           </Link>
-          {product.material && <p className="mt-1 truncate text-[10px] text-black/45">{product.material}</p>}
+          {product.material && <p className="mt-0.5 truncate text-caption text-ink-subtle">{product.material}</p>}
         </div>
-        <div className="shrink-0 text-right">
-          <span className="text-sm font-bold">{money(product.price)}</span>
-          {product.compareAtPrice && (
-            <span className="block text-[10px] text-black/35 line-through">{money(product.compareAtPrice)}</span>
-          )}
-        </div>
+        <p className="shrink-0 text-sm tabular-nums sm:text-right">
+          {onSale && product.compareAtPrice && <s className="mr-2 text-ink-subtle">{money(product.compareAtPrice)}</s>}
+          <span className={onSale ? 'text-accent' : ''}>{money(product.price)}</span>
+        </p>
       </div>
+      {!soldOut && (
+        <button
+          type="button"
+          onClick={add}
+          aria-label={`Add ${product.name} to bag`}
+          className="absolute right-3 top-0 z-10 mt-[calc(125%-3.5rem)] grid size-11 place-items-center border border-ink bg-paper-raised text-ink transition-opacity duration-(--dur-fast) focus-visible:opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100"
+        >
+          {added ? <Check size={20} strokeWidth={1.5} /> : <Plus size={20} strokeWidth={1.5} />}
+        </button>
+      )}
+      <span role="status" className="sr-only">
+        {added ? `${product.name} added to bag` : ''}
+      </span>
     </article>
   )
 }

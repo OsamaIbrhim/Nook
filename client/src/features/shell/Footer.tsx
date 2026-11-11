@@ -1,42 +1,56 @@
-import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useSession } from '../auth'
+import { useListCategoriesQuery } from '../catalog'
+import { usePolicy } from '../policy'
+
+const heading = 'text-eyebrow font-medium uppercase text-on-inverse-muted'
+const list = 'mt-4 flex flex-col items-start gap-3 text-sm'
 
 export function Footer() {
+  const { data: categories = [] } = useListCategoriesQuery()
+  const policy = usePolicy()
+  const { user } = useSession()
   return (
-    <footer className="border-t border-white/15 bg-[#090909] px-4 pb-6 pt-20 text-white sm:px-6 sm:pt-28">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-12 lg:grid-cols-[1fr_420px]">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[.25em] text-[#d7ff39]">Nook object store</p>
-            <p className="mt-5 text-[clamp(3.8rem,8vw,8rem)] font-black leading-[.78] tracking-[-.07em]">
-              LIVE WITH
-              <br />
-              INTENTION.
+    <footer className="surface-inverse pt-(--section-gap)">
+      <div className="container-app">
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <p className="font-display text-[2.5rem] leading-none">Nook</p>
+            <p className="mt-5 max-w-sm text-on-inverse-muted">
+              A small collection of useful things, chosen for their materials and made to last.
             </p>
           </div>
-          <div className="flex flex-col justify-end">
-            <p className="max-w-sm text-sm leading-6 text-white/50">
-              A digital atelier for objects that bring character, calm, and utility to the spaces around you.
-            </p>
-            <div className="mt-8 grid grid-cols-2 gap-6 border-t border-white/15 pt-6 text-xs font-bold uppercase tracking-widest">
-              <div className="flex flex-col gap-3">
-                <Link to="/products">Collection</Link>
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-6 lg:col-start-7">
+            <nav aria-label="Shop">
+              <p className={heading}>Shop</p>
+              <div className={list}>
+                <Link to="/products">Shop all</Link>
+                {categories.map((category) => (
+                  <Link key={category.slug} to={`/products?category=${category.slug}`}>
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+            <nav aria-label="Help">
+              <p className={heading}>Help</p>
+              <div className={list}>
                 <Link to="/orders">Orders</Link>
-                <Link to="/account">Account</Link>
+                {policy && <a href={`mailto:${policy.supportEmail}`}>Contact</a>}
               </div>
-              <div className="flex flex-col gap-3">
-                <a href="mailto:hello@nook.store" className="flex items-center gap-1">
-                  Contact <ArrowUpRight size={13} />
-                </a>
-                <span className="text-white/35">Cairo, EG</span>
+            </nav>
+            <nav aria-label="Account">
+              <p className={heading}>Account</p>
+              <div className={list}>
+                <Link to={user ? '/account' : '/login'}>{user ? 'Account' : 'Sign in'}</Link>
+                <Link to="/cart">Bag</Link>
               </div>
-            </div>
+            </nav>
           </div>
         </div>
-        <div className="mt-20 flex flex-wrap items-end justify-between gap-5 border-t border-white/15 pt-5 text-[9px] font-bold uppercase tracking-[.2em] text-white/35">
+        <div className="mt-16 flex flex-wrap justify-between gap-3 border-t border-line-inverse py-6 text-caption text-on-inverse-muted">
           <p>© {new Date().getFullYear()} Nook Objects</p>
-          <p>Secure commerce / Stripe protected</p>
-          <p>Designed for the curious</p>
+          <p>Payments by Stripe</p>
         </div>
       </div>
     </footer>

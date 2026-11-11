@@ -1,153 +1,203 @@
-import { ArrowRight, MoveUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-
-import { OutcomeHero } from '../components/OutcomeHero'
-import { ProductCard, useListProductsQuery } from '../../catalog'
-import { ProductGridSkeleton } from '../../../shared/ui/Skeletons'
+import { mediaUrl } from '../../../shared/media/imageUrl'
 import { Seo } from '../../../shared/seo/Seo'
-import { siteUrl } from '../../../shared/seo/siteUrl'
+import { siteName, siteUrl } from '../../../shared/seo/siteUrl'
+import { ProductGridSkeleton } from '../../../shared/ui/Skeletons'
+import { ProductCard, useListCategoriesQuery, useListProductsQuery } from '../../catalog'
+import { useMoney, usePolicy } from '../../policy'
 
-const categories = [
-  { index: '01', name: 'Objects for home', caption: 'Form, texture, atmosphere', slug: 'home' },
-  { index: '02', name: 'Kitchen rituals', caption: 'Gather, prepare, share', slug: 'kitchen' },
-  { index: '03', name: 'Workspace tools', caption: 'Focus without friction', slug: 'workspace' },
-  { index: '04', name: 'Everyday wellness', caption: 'Slow down, tune in', slug: 'wellness' }
+const homeSchema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: siteName,
+    url: siteUrl,
+    logo: `${siteUrl}/favicon.svg`
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${siteUrl}/#website`,
+    url: siteUrl,
+    name: siteName,
+    publisher: { '@id': `${siteUrl}/#organization` },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: `${siteUrl}/products?search={search_term_string}` },
+      'query-input': 'required name=search_term_string'
+    }
+  }
+]
+
+const arrivalsGrid = 'grid grid-cols-2 gap-x-(--grid-gap) gap-y-10 md:grid-cols-4'
+
+const principles = [
+  ['01', 'Materials', 'Stoneware, oak, linen, brass. Each one is named on the page, so you know what you are buying.'],
+  ['02', 'Makers', 'Small workshops we can name, working in batches small enough to check by hand.'],
+  ['03', 'Made to last', 'If an object will not survive daily use, it does not make the collection.']
 ]
 
 export function HomePage() {
-  const { data, isLoading: loading } = useListProductsQuery({ limit: 4 })
+  const { data, isLoading, isError, refetch } = useListProductsQuery({ limit: 4 })
+  const { data: categories = [] } = useListCategoriesQuery()
+  const policy = usePolicy()
+  const money = useMoney()
   const products = data?.products ?? []
+  const deliveryLine =
+    policy && policy.freeShippingThreshold !== null
+      ? `Free delivery from ${money(policy.freeShippingThreshold)}.`
+      : 'Tracked delivery on every order.'
 
-  const homeSchema = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      '@id': `${siteUrl}/#organization`,
-      name: 'Nook Objects',
-      url: siteUrl,
-      logo: `${siteUrl}/favicon.svg`
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      '@id': `${siteUrl}/#website`,
-      url: siteUrl,
-      name: 'Nook Objects',
-      publisher: { '@id': `${siteUrl}/#organization` },
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: { '@type': 'EntryPoint', urlTemplate: `${siteUrl}/products?search={search_term_string}` },
-        'query-input': 'required name=search_term_string'
-      }
-    }
-  ]
   return (
-    <div className="overflow-hidden bg-[#090909] text-[#f3f1e9]">
+    <>
       <Seo page="home" path="/" jsonLd={homeSchema} />
-      <OutcomeHero />
 
-      <section id="buying-standard" className="scroll-mt-28 bg-[#f2efe6] px-4 py-24 text-[#0a0a0a] sm:px-6 sm:py-36">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-[220px_1fr]">
-            <p className="pt-2 text-xs font-bold uppercase tracking-[.22em]">[ Our point of view ]</p>
-            <div>
-              <h2 className="text-[clamp(3.2rem,7.2vw,7.4rem)] font-semibold leading-[.93] tracking-[-.055em]">
-                Things should do more than <span className="font-light italic text-black/35">exist.</span> They should
-                change how a moment feels.
-              </h2>
-              <div className="mt-12 flex flex-col items-start justify-between gap-6 border-t border-black/20 pt-6 sm:flex-row sm:items-end">
-                <p className="max-w-md text-sm leading-6 text-black/55">
-                  Nook brings gallery-level curation to everyday commerce. No noise. No endless aisles. Just objects
-                  with purpose, presence, and a story worth keeping.
-                </p>
-                <Link
-                  to="/products"
-                  className="group flex items-center gap-3 text-sm font-bold uppercase tracking-widest"
-                >
-                  Enter the archive{' '}
-                  <span className="grid size-11 place-items-center rounded-full border border-black transition group-hover:bg-black group-hover:text-white">
-                    <ArrowRight size={17} />
-                  </span>
-                </Link>
-              </div>
-            </div>
+      <section aria-labelledby="hero-title">
+        <div className="plate h-[min(68svh,125vw)] md:h-[clamp(420px,78svh,860px)]">
+          <img
+            src={mediaUrl('/og-cover.jpg')}
+            alt="A speckled stoneware mug on a dark slate table"
+            width={1376}
+            height={768}
+            fetchPriority="high"
+            className="hero-settle h-full w-full object-cover object-[30%_50%]"
+          />
+        </div>
+        <div className="container-app grid gap-8 pb-(--section-gap) pt-8 lg:grid-cols-12 lg:pt-12">
+          <h1 id="hero-title" className="text-hero tracking-[-0.025em] lg:col-span-8">
+            Objects for a <em>quieter</em> home.
+          </h1>
+          <div className="lg:col-span-4 lg:col-start-9 lg:pt-3">
+            <p className="max-w-[62ch] text-lead text-ink-muted">
+              A small collection of useful things, chosen for their materials and made to last.
+            </p>
+            <Link to="/products" className="btn-primary mt-7 w-full sm:w-auto">
+              Shop the collection
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="bg-[#090909] py-24 sm:py-32">
-        <div className="container-app">
-          <div className="mb-12 flex items-end justify-between border-b border-white/15 pb-6">
+      {categories.length > 0 && (
+        <section aria-labelledby="rooms-title" className="container-app pb-(--section-gap)">
+          <p className="eyebrow">Shop by room</p>
+          <h2 id="rooms-title" className="mt-3 text-h2 tracking-[-0.01em]">
+            Four rooms, one idea.
+          </h2>
+          <ul className="mt-10 grid grid-cols-2 gap-x-(--grid-gap) gap-y-10 md:grid-cols-4">
+            {categories.map((category) => (
+              <li key={category.slug} className="relative">
+                <div className="plate aspect-[4/5]">
+                  {category.cover && (
+                    <img
+                      src={mediaUrl(category.cover.url)}
+                      alt=""
+                      width={800}
+                      height={1000}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover object-[50%_55%]"
+                    />
+                  )}
+                </div>
+                <Link
+                  to={`/products?category=${category.slug}`}
+                  className="mt-3 block font-display text-title after:absolute after:inset-0"
+                >
+                  {category.name}
+                </Link>
+                <p className="text-caption text-ink-subtle">
+                  {category.productCount} {category.productCount === 1 ? 'object' : 'objects'}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(isLoading || isError || products.length > 0) && (
+        <section aria-labelledby="new-title" className="container-app pb-(--section-gap)">
+          <div className="flex items-end justify-between gap-6">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[.25em] text-[#d7ff39]">Drop 001</p>
-              <h2 className="mt-2 text-4xl font-black tracking-[-.04em] sm:text-6xl">SELECTED OBJECTS</h2>
+              <p className="eyebrow">New</p>
+              <h2 id="new-title" className="mt-3 text-h2 tracking-[-0.01em]">
+                Recently arrived
+              </h2>
             </div>
-            <Link
-              to="/products"
-              className="hidden items-center gap-2 text-xs font-bold uppercase tracking-widest sm:flex"
-            >
-              View all <MoveUpRight size={17} />
+            <Link to="/products" className="link-text shrink-0 text-sm">
+              View all
             </Link>
           </div>
-          <div className="text-[#0a0a0a]">
-            {loading ? (
-              <ProductGridSkeleton count={4} />
+          <div className="mt-10">
+            {isLoading ? (
+              <ProductGridSkeleton count={4} className={arrivalsGrid} />
+            ) : isError ? (
+              <div role="status" className="bg-paper-sunken p-8">
+                <h3 className="text-h3">We couldn’t load this.</h3>
+                <button type="button" onClick={() => refetch()} className="btn-secondary mt-6">
+                  Try again
+                </button>
+              </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-                {products.map((product, index) => (
-                  <div className={index % 2 ? 'sm:mt-16' : ''} key={product._id}>
-                    <ProductCard product={product} />
-                  </div>
+              <div className={arrivalsGrid}>
+                {products.map((product) => (
+                  <ProductCard key={product._id} product={product} />
                 ))}
               </div>
             )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <section className="bg-[#6d63ff] py-24 text-black sm:py-32">
+      <section aria-labelledby="statement-title" className="bg-paper-sunken py-(--section-gap)">
         <div className="container-app">
-          <div className="mb-14 flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-[.24em]">Explore by atmosphere</p>
-            <p className="text-xs font-bold">04 / WORLDS</p>
-          </div>
-          <div className="divide-y divide-black/30 border-y border-black/30">
-            {categories.map((category) => (
-              <Link
-                key={category.index}
-                to={`/products?category=${category.slug}`}
-                className="group grid grid-cols-[50px_1fr_auto] items-center gap-3 py-6 transition hover:px-3 sm:grid-cols-[90px_1fr_240px_auto] sm:py-9"
-              >
-                <span className="font-mono text-xs">{category.index}</span>
-                <span className="text-3xl font-black uppercase tracking-[-.04em] sm:text-6xl">{category.name}</span>
-                <span className="hidden text-sm text-black/55 sm:block">{category.caption}</span>
-                <span className="grid size-11 place-items-center rounded-full border border-black transition group-hover:-rotate-45 group-hover:bg-black group-hover:text-white">
-                  <ArrowRight size={18} />
-                </span>
-              </Link>
+          <h2 id="statement-title" className="max-w-[18ch] text-h2 tracking-[-0.01em]">
+            We keep the collection small <em>on purpose.</em>
+          </h2>
+          <ol className="mt-12 grid gap-10 md:grid-cols-3 md:gap-(--grid-gap)">
+            {principles.map(([numeral, title, text]) => (
+              <li key={numeral} className="border-t border-line-strong pt-5">
+                <p className="eyebrow">{numeral}</p>
+                <h3 className="mt-3 text-title">{title}</h3>
+                <p className="mt-3 max-w-[40ch] text-ink-muted">{text}</p>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      <section className="relative grid min-h-[70vh] place-items-center overflow-hidden bg-[#ff5c35] px-4 py-24 text-center text-black">
-        <div className="absolute left-[-8rem] top-[-8rem] size-72 rounded-full border-[40px] border-black/10 sm:size-96" />
-        <div className="absolute bottom-[-4rem] right-[8%] size-48 rotate-45 bg-[#d7ff39] opacity-70" />
-        <div className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[.25em]">Your space is waiting</p>
-          <h2 className="mt-5 text-[clamp(3.6rem,9vw,9rem)] font-black leading-[.82] tracking-[-.07em]">
-            FIND YOUR
-            <br />
-            NEXT OBJECT.
+      <section
+        aria-labelledby="delivery-title"
+        className="container-app grid items-center gap-8 py-(--section-gap) lg:grid-cols-12"
+      >
+        <div className="plate aspect-[3/2] lg:col-span-7">
+          <img
+            src={mediaUrl('/products/linen-table-runner.jpg')}
+            alt=""
+            width={1024}
+            height={1024}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <div className="lg:col-span-4 lg:col-start-9">
+          <p className="eyebrow">Delivery and returns</p>
+          <h2 id="delivery-title" className="mt-3 text-h3">
+            {deliveryLine} {policy && policy.returnWindowDays > 0 ? 'Time to change your mind.' : ''}
           </h2>
-          <Link
-            to="/products"
-            className="mt-10 inline-flex items-center gap-3 rounded-full bg-black px-7 py-4 text-sm font-bold uppercase tracking-widest text-white transition hover:scale-105"
-          >
-            Shop the collection <ArrowRight size={18} />
+          <p className="mt-5 max-w-[62ch] text-ink-muted">
+            Every order is tracked from our studio to your door.
+            {policy &&
+              policy.returnWindowDays > 0 &&
+              ` Unused objects come back within ${policy.returnWindowDays} days.`}
+          </p>
+          <Link to="/products" className="link-text mt-6 inline-block text-sm">
+            Browse the collection
           </Link>
         </div>
       </section>
-    </div>
+    </>
   )
 }
