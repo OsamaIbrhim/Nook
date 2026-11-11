@@ -126,7 +126,7 @@ describe('CheckoutPage', () => {
     const summary = await screen.findByRole('complementary')
     await waitFor(() => expect(within(summary).getByText('Ripple Mug')).toBeInTheDocument())
     expect(within(summary).getByText('Arc Lamp')).toBeInTheDocument()
-    expect(within(summary).getByText(/EGP.147\.50/, { selector: 'span' })).toBeInTheDocument()
+    expect(within(summary).getByText(/EGP.147\.50/, { selector: 'dd' })).toBeInTheDocument()
     expect(within(summary).getByText(/EGP.50\.00/)).toBeInTheDocument()
     expect(within(summary).getByText(/EGP.197\.50/)).toBeInTheDocument()
     expect(summary).not.toHaveTextContent('$')

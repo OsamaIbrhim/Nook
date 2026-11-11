@@ -1,4 +1,4 @@
-import { AlertCircle, Minus, Plus } from 'lucide-react'
+import { AlertCircle, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
@@ -7,6 +7,7 @@ import { absoluteMediaUrl, mediaUrl } from '../../../shared/media/imageUrl'
 import { Seo } from '../../../shared/seo/Seo'
 import { siteUrl } from '../../../shared/seo/siteUrl'
 import { PageError } from '../../../shared/ui/PageError'
+import { QuantityStepper } from '../../../shared/ui/QuantityStepper'
 import { productGridClass } from '../../../shared/ui/Skeletons'
 import { addLine } from '../../cart'
 import { dispatchCopy, returnsCopy, useMoney, usePolicy } from '../../policy'
@@ -16,7 +17,6 @@ import { productJsonLd } from '../productJsonLd'
 
 const LOW_STOCK = 4
 const ADDED_FEEDBACK_MS = 1600
-const stepButton = 'grid size-11 place-items-center disabled:opacity-45'
 const disclosure = 'group border-b border-line py-4'
 const disclosureSummary =
   'flex cursor-pointer list-none items-center justify-between text-eyebrow font-medium uppercase [&::-webkit-details-marker]:hidden'
@@ -175,29 +175,13 @@ export function ProductDetailPage() {
             )}
 
             <div className="mt-8 flex gap-3">
-              <div className="flex items-center border border-line-strong">
-                <button
-                  type="button"
-                  className={stepButton}
-                  onClick={() => setQuantity((value) => value - 1)}
-                  disabled={soldOut || quantity <= 1}
-                  aria-label="Decrease quantity"
-                >
-                  <Minus size={16} strokeWidth={1.5} />
-                </button>
-                <span className="w-8 text-center tabular-nums" aria-live="polite" aria-label={`Quantity ${quantity}`}>
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  className={stepButton}
-                  onClick={() => setQuantity((value) => value + 1)}
-                  disabled={soldOut || quantity >= maxQuantity}
-                  aria-label="Increase quantity"
-                >
-                  <Plus size={16} strokeWidth={1.5} />
-                </button>
-              </div>
+              <QuantityStepper
+                itemName={product.name}
+                value={quantity}
+                max={maxQuantity}
+                disabled={soldOut}
+                onChange={setQuantity}
+              />
               <button type="button" onClick={add} disabled={soldOut} className="btn-primary flex-1">
                 <span aria-live="polite">
                   {soldOut ? 'Sold out' : added ? 'Added' : `Add to bag, ${money(product.price * quantity)}`}

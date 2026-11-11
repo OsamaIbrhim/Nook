@@ -1,16 +1,38 @@
-import { LockKeyhole } from 'lucide-react'
-import { useState } from 'react'
+import { Lock } from 'lucide-react'
+import { useState, type FormEvent, type InputHTMLAttributes } from 'react'
 import { Navigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import type { Address } from '../../../shared/contract/types'
-import { useMoney } from '../../policy'
 import { errorMessage } from '../../../shared/http/errors'
 import { redirectTo } from '../../../shared/http/redirect'
 import { mediaUrl } from '../../../shared/media/imageUrl'
 import { useSession } from '../../auth'
-import { useCartQuote } from '../../cart'
+import { QuoteTotals, useCartQuote } from '../../cart'
+import { useMoney } from '../../policy'
 import { useCreateCheckoutSessionMutation, useCreateOrderMutation } from '../api'
 import { attemptKey, bodyFingerprint, clearAttempt } from '../checkoutAttempt'
+
+type AddressField = keyof Address
+
+const fields: {
+  key: AddressField
+  label: string
+  wide?: boolean
+  input: InputHTMLAttributes<HTMLInputElement>
+}[] = [
+  { key: 'name', label: 'Full name', wide: true, input: { required: true, autoComplete: 'name' } },
+  { key: 'line1', label: 'Address', wide: true, input: { required: true, autoComplete: 'address-line1' } },
+  { key: 'line2', label: 'Apartment, suite (optional)', wide: true, input: { autoComplete: 'address-line2' } },
+  { key: 'city', label: 'City', input: { required: true, autoComplete: 'address-level2' } },
+  { key: 'state', label: 'State / region', input: { autoComplete: 'address-level1' } },
+  { key: 'postalCode', label: 'Postal code', input: { required: true, autoComplete: 'postal-code' } },
+  {
+    key: 'country',
+    label: 'Country code',
+    input: { required: true, minLength: 2, maxLength: 2, autoComplete: 'country', className: 'field uppercase' }
+  },
+  { key: 'phone', label: 'Phone (optional)', wide: true, input: { type: 'tel', autoComplete: 'tel' } }
+]
 
 export function CheckoutPage() {
   const money = useMoney()
@@ -33,8 +55,9 @@ export function CheckoutPage() {
   const priced = new Map(quote?.lines.map((line) => [line.productId, line]))
   const canPay = !loading && !isFetching && !!quote?.checkoutAllowed
   if (!lines.length) return <Navigate to="/cart" replace />
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
     if (!canPay) return
     setLoading(true)
     try {
@@ -54,143 +77,72 @@ export function CheckoutPage() {
       setLoading(false)
     }
   }
+
   return (
-    <div className="container-app py-10">
-      <div className="mb-8">
-        <p className="text-xs font-bold uppercase tracking-[.2em] text-forest">Secure checkout</p>
-        <h1 className="mt-2 text-4xl font-black">Where should we send it?</h1>
-      </div>
-      <form onSubmit={submit} className="grid gap-8 lg:grid-cols-[1fr_380px]">
-        <section className="card p-6 sm:p-8">
-          <h2 className="mb-6 text-xl font-bold">Shipping information</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="sm:col-span-2">
-              <span className="label">Full name</span>
-              <input
-                required
-                className="field"
-                value={address.name}
-                onChange={(e) => setAddress({ ...address, name: e.target.value })}
-              />
-            </label>
-            <label className="sm:col-span-2">
-              <span className="label">Address</span>
-              <input
-                required
-                className="field"
-                value={address.line1}
-                onChange={(e) => setAddress({ ...address, line1: e.target.value })}
-              />
-            </label>
-            <label className="sm:col-span-2">
-              <span className="label">Apartment, suite (optional)</span>
-              <input
-                className="field"
-                value={address.line2}
-                onChange={(e) => setAddress({ ...address, line2: e.target.value })}
-              />
-            </label>
-            <label>
-              <span className="label">City</span>
-              <input
-                required
-                className="field"
-                value={address.city}
-                onChange={(e) => setAddress({ ...address, city: e.target.value })}
-              />
-            </label>
-            <label>
-              <span className="label">State / region</span>
-              <input
-                className="field"
-                value={address.state}
-                onChange={(e) => setAddress({ ...address, state: e.target.value })}
-              />
-            </label>
-            <label>
-              <span className="label">Postal code</span>
-              <input
-                required
-                className="field"
-                value={address.postalCode}
-                onChange={(e) => setAddress({ ...address, postalCode: e.target.value })}
-              />
-            </label>
-            <label>
-              <span className="label">Country code</span>
-              <input
-                required
-                minLength={2}
-                maxLength={2}
-                className="field uppercase"
-                value={address.country}
-                onChange={(e) => setAddress({ ...address, country: e.target.value.toUpperCase() })}
-              />
-            </label>
-            <label className="sm:col-span-2">
-              <span className="label">Phone (optional)</span>
-              <input
-                className="field"
-                value={address.phone}
-                onChange={(e) => setAddress({ ...address, phone: e.target.value })}
-              />
-            </label>
+    <div className="container-app pb-(--section-gap) pt-10 sm:pt-14">
+      <p className="eyebrow">Checkout</p>
+      <h1 className="mt-3 text-h1 tracking-[-0.015em]">Where should we send it?</h1>
+      <form onSubmit={submit} className="mt-10 grid gap-10 lg:grid-cols-12">
+        <section className="lg:col-span-7">
+          <h2 className="text-title">Delivery address</h2>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            {fields.map(({ key, label, wide, input }) => (
+              <label key={key} className={wide ? 'sm:col-span-2' : ''}>
+                <span className="label">{label}</span>
+                <input
+                  className="field"
+                  {...input}
+                  value={address[key] ?? ''}
+                  onChange={(event) =>
+                    setAddress({
+                      ...address,
+                      [key]: key === 'country' ? event.target.value.toUpperCase() : event.target.value
+                    })
+                  }
+                />
+              </label>
+            ))}
           </div>
         </section>
-        <aside className="card h-fit p-6">
-          <h2 className="font-bold">Your order</h2>
-          <div className="my-5 max-h-64 space-y-3 overflow-auto">
+        <aside className="h-fit bg-paper-sunken p-6 lg:sticky lg:top-[calc(var(--header-h)+1.5rem)] lg:col-span-4 lg:col-start-9">
+          <h2 className="text-title">Your order</h2>
+          <ul className="my-6 max-h-72 space-y-4 overflow-auto">
             {lines.map(({ productId, quantity }) => {
               const line = priced.get(productId)
               return (
-                <div className="flex items-center gap-3 text-sm" key={productId}>
-                  <div className="size-12 overflow-hidden rounded-lg bg-cream">
+                <li className="flex items-center gap-3 text-sm" key={productId}>
+                  <div className="plate aspect-[4/5] w-12 shrink-0">
                     {line?.image && (
-                      <img src={mediaUrl(line.image.url)} alt="" className="h-full w-full object-cover" />
+                      <img
+                        src={mediaUrl(line.image.url)}
+                        alt=""
+                        width={96}
+                        height={120}
+                        className="h-full w-full object-cover"
+                      />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    {line ? (
-                      <p className="truncate font-medium">{line.name}</p>
-                    ) : (
-                      <div className="h-4 w-28 animate-pulse rounded bg-black/8" />
-                    )}
-                    <p className="text-black/40">Qty {quantity}</p>
+                    {line ? <p className="truncate font-medium">{line.name}</p> : <div className="h-4 w-28 bg-paper" />}
+                    <p className="text-ink-muted">Qty {quantity}</p>
                   </div>
                   {line ? (
-                    <b>{money(line.lineTotal, currency)}</b>
+                    <span className="tabular-nums">{money(line.lineTotal, currency)}</span>
                   ) : (
-                    <div className="h-4 w-14 animate-pulse rounded bg-black/8" />
+                    <div className="h-4 w-14 bg-paper" />
                   )}
-                </div>
+                </li>
               )
             })}
+          </ul>
+          <div className="border-t border-line-strong pt-5">
+            <QuoteTotals quote={quote} />
           </div>
-          {quote && (
-            <div className="space-y-2 border-t border-black/8 pt-4 text-sm text-black/55">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>{money(quote.subtotal, currency)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>{quote.shipping === 0 ? 'Free' : money(quote.shipping, currency)}</span>
-              </div>
-            </div>
-          )}
-          <div className="mt-2 flex justify-between border-t border-black/8 pt-4 text-lg font-bold">
-            <span>Total</span>
-            {quote ? (
-              <span>{money(quote.total, currency)}</span>
-            ) : (
-              <div className="h-6 w-20 animate-pulse rounded bg-black/8" />
-            )}
-          </div>
-          <button disabled={!canPay} className="btn-primary mt-6 w-full">
-            <LockKeyhole size={17} />
+          <button type="submit" disabled={!canPay} className="btn-primary mt-6 w-full">
+            <Lock size={16} strokeWidth={1.5} aria-hidden="true" />
             {loading ? 'Redirecting…' : 'Pay securely with Stripe'}
           </button>
-          <p className="mt-3 text-center text-xs text-black/40">You’ll complete payment on Stripe’s secure page.</p>
+          <p className="mt-3 text-center text-caption text-ink-subtle">You’ll complete payment on Stripe’s page.</p>
         </aside>
       </form>
     </div>

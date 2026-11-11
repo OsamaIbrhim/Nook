@@ -1,13 +1,14 @@
-import { Minus, Plus, Trash2 } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { useMoney } from '../../policy'
 import { errorMessage } from '../../../shared/http/errors'
 import { mediaUrl } from '../../../shared/media/imageUrl'
 import { EmptyState } from '../../../shared/ui/EmptyState'
 import { PageError } from '../../../shared/ui/PageError'
+import { QuantityStepper } from '../../../shared/ui/QuantityStepper'
+import { useMoney } from '../../policy'
 import { removeLine, setQuantity } from '../cartSlice'
 import { CartNotices } from '../components/CartNotices'
+import { QuoteTotals } from '../components/QuoteTotals'
 import { useCartQuote } from '../useCartQuote'
 
 export function CartPage() {
@@ -22,10 +23,10 @@ export function CartPage() {
         <CartNotices notices={notices} currency={currency} onDismiss={dismissNotices} />
         <EmptyState
           title="Your bag is empty"
-          text="Good things are waiting. Browse the collection and find something you love."
+          text="Browse the collection and add the objects you would like to keep."
           action={
             <Link className="btn-primary" to="/products">
-              Start shopping
+              Shop the collection
             </Link>
           }
         />
@@ -34,7 +35,7 @@ export function CartPage() {
 
   if (error && !quote)
     return (
-      <div className="container-app py-10">
+      <div className="container-app py-14">
         <PageError message={errorMessage(error)} retry={refetch} />
       </div>
     )
@@ -43,104 +44,84 @@ export function CartPage() {
   const remaining = quote?.freeShippingRemaining ?? null
 
   return (
-    <div className="container-app py-10">
-      <h1 className="mb-8 text-4xl font-black tracking-tight">
-        Your bag <span className="text-black/25">({lines.length})</span>
+    <div className="container-app pb-(--section-gap) pt-10 sm:pt-14">
+      <h1 className="text-h1 tracking-[-0.015em]">
+        Your bag <span className="text-ink-subtle">({lines.length})</span>
       </h1>
-      <CartNotices notices={notices} currency={currency} onDismiss={dismissNotices} />
-      <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
-        <div className="card divide-y divide-black/5 px-5" aria-busy={isFetching}>
+      <div className="mt-6">
+        <CartNotices notices={notices} currency={currency} onDismiss={dismissNotices} />
+      </div>
+      <div className="mt-4 grid gap-10 lg:grid-cols-12">
+        <ul className="border-t border-line lg:col-span-8" aria-busy={isFetching}>
           {lines.map(({ productId, quantity }) => {
             const line = priced.get(productId)
             const stale = !line || line.requestedQuantity !== quantity
             const name = line?.name ?? 'this item'
             return (
-              <div key={productId} className="flex gap-4 py-5">
-                {line?.slug ? (
-                  <Link to={`/products/${line.slug}`} className="size-24 shrink-0 overflow-hidden rounded-xl bg-cream">
-                    {line.image && <img className="h-full w-full object-cover" src={mediaUrl(line.image.url)} alt="" />}
-                  </Link>
-                ) : (
-                  <div className="size-24 shrink-0 animate-pulse rounded-xl bg-cream" />
-                )}
-                <div className="min-w-0 flex-1">
-                  {line?.slug ? (
-                    <Link to={`/products/${line.slug}`} className="font-bold">
-                      {line.name}
-                    </Link>
-                  ) : (
-                    <div className="h-5 w-40 animate-pulse rounded bg-black/8" />
+              <li key={productId} className="flex gap-4 border-b border-line py-6">
+                <div className="plate aspect-[4/5] w-24 shrink-0">
+                  {line?.image && (
+                    <img
+                      className="h-full w-full object-cover"
+                      src={mediaUrl(line.image.url)}
+                      alt=""
+                      width={192}
+                      height={240}
+                      loading="lazy"
+                    />
                   )}
-                  {line?.category && <p className="mt-1 text-sm text-black/45">{line.category.name}</p>}
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center rounded-full border border-black/10">
-                      <button
-                        className="p-2"
-                        aria-label={`Decrease quantity of ${name}`}
-                        disabled={quantity <= 1}
-                        onClick={() => dispatch(setQuantity({ productId, quantity: quantity - 1 }))}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="w-7 text-center text-xs font-bold" aria-label={`Quantity of ${name}`}>
-                        {quantity}
-                      </span>
-                      <button
-                        className="p-2"
-                        aria-label={`Increase quantity of ${name}`}
-                        disabled={!!line && quantity >= line.maxQuantity}
-                        onClick={() => dispatch(setQuantity({ productId, quantity: quantity + 1 }))}
-                      >
-                        <Plus size={14} />
-                      </button>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      {line?.category && <p className="eyebrow">{line.category.name}</p>}
+                      {line?.slug ? (
+                        <Link to={`/products/${line.slug}`} className="mt-1 block font-medium">
+                          {line.name}
+                        </Link>
+                      ) : (
+                        <div className="mt-1 h-5 w-40 bg-paper-sunken" />
+                      )}
                     </div>
+                    {line ? (
+                      <p className={`shrink-0 tabular-nums ${stale ? 'opacity-50' : ''}`}>
+                        {money(line.lineTotal, currency)}
+                      </p>
+                    ) : (
+                      <div className="h-5 w-16 bg-paper-sunken" />
+                    )}
+                  </div>
+                  <div className="mt-auto flex items-center justify-between gap-4 pt-4">
+                    <QuantityStepper
+                      itemName={name}
+                      value={quantity}
+                      max={line?.maxQuantity}
+                      onChange={(next) => dispatch(setQuantity({ productId, quantity: next }))}
+                    />
                     <button
-                      className="text-black/35 hover:text-red-600"
+                      type="button"
+                      className="link-text min-h-11 text-sm"
                       aria-label={`Remove ${name} from your bag`}
                       onClick={() => dispatch(removeLine(productId))}
                     >
-                      <Trash2 size={18} />
+                      Remove
                     </button>
                   </div>
                 </div>
-                {line ? (
-                  <b className={stale ? 'opacity-50' : ''}>{money(line.lineTotal, currency)}</b>
-                ) : (
-                  <div className="h-5 w-16 animate-pulse rounded bg-black/8" />
-                )}
-              </div>
+              </li>
             )
           })}
-        </div>
-        <aside className="card h-fit p-6">
-          <h2 className="text-xl font-bold">Order summary</h2>
-          {quote ? (
-            <div className={`mt-6 space-y-3 text-sm ${isFetching ? 'opacity-60' : ''}`}>
-              <div className="flex justify-between text-black/55">
-                <span>Subtotal</span>
-                <span>{money(quote.subtotal, currency)}</span>
-              </div>
-              <div className="flex justify-between text-black/55">
-                <span>Shipping</span>
-                <span>{quote.shipping === 0 ? 'Free' : money(quote.shipping, currency)}</span>
-              </div>
-              {remaining !== null && remaining > 0 && (
-                <p className="text-xs text-black/55">Add {money(remaining, currency)} more for free shipping.</p>
-              )}
-              <div className="flex justify-between border-t border-black/8 pt-4 text-lg font-bold">
-                <span>Total</span>
-                <span>{money(quote.total, currency)}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-6 space-y-3" aria-label="Loading totals">
-              <div className="h-4 animate-pulse rounded bg-black/8" />
-              <div className="h-4 animate-pulse rounded bg-black/8" />
-              <div className="h-6 animate-pulse rounded bg-black/8" />
-            </div>
+        </ul>
+        <aside className="h-fit bg-paper-sunken p-6 lg:sticky lg:top-[calc(var(--header-h)+1.5rem)] lg:col-span-4">
+          <h2 className="text-title">Order summary</h2>
+          <div className={`mt-6 ${isFetching ? 'opacity-60' : ''}`}>
+            <QuoteTotals quote={quote} />
+          </div>
+          {remaining !== null && remaining > 0 && (
+            <p className="mt-4 text-caption text-ink-muted">Add {money(remaining, currency)} more for free shipping.</p>
           )}
           {quote && !quote.checkoutAllowed ? (
-            <button disabled className="btn-primary mt-6 w-full">
+            <button type="button" disabled className="btn-primary mt-6 w-full">
               Continue to checkout
             </button>
           ) : (
@@ -148,7 +129,7 @@ export function CartPage() {
               Continue to checkout
             </Link>
           )}
-          <p className="mt-3 text-center text-xs text-black/40">Taxes calculated where applicable</p>
+          <p className="mt-3 text-center text-caption text-ink-subtle">Taxes calculated where applicable</p>
         </aside>
       </div>
     </div>
