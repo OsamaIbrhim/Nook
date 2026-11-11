@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { Provider } from 'react-redux'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createStore } from '../../../app/store'
 import { server } from '../../../test/server'
 import { AuthPage } from './AuthPage'
@@ -79,5 +79,32 @@ describe('AuthPage login', () => {
     await signIn()
     await waitFor(() => expect(screen.getByText('Invalid email or password')).toBeInTheDocument())
     expect(screen.getByRole('button', { name: /sign in/i })).toBeEnabled()
+  })
+})
+
+describe('AuthPage demo customer', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('offers no demo account when none is configured for this build', () => {
+    vi.stubEnv('VITE_DEMO_CUSTOMER_EMAIL', '')
+    vi.stubEnv('VITE_DEMO_CUSTOMER_PASSWORD', '')
+    renderLogin()
+    expect(screen.queryByRole('button', { name: /demo/i })).not.toBeInTheDocument()
+  })
+
+  it('fills the configured demo customer into the form, and nothing is sent until Sign in is pressed', async () => {
+    vi.stubEnv('VITE_DEMO_CUSTOMER_EMAIL', 'demo@example.test')
+    vi.stubEnv('VITE_DEMO_CUSTOMER_PASSWORD', 'Demo-pass-123')
+    renderLogin()
+    await userEvent.click(screen.getByRole('button', { name: 'Fill in the demo customer' }))
+    expect(screen.getByLabelText('Email address')).toHaveValue('demo@example.test')
+    expect(screen.getByLabelText('Password')).toHaveValue('Demo-pass-123')
+  })
+
+  it('needs both the email and the password to be configured', () => {
+    vi.stubEnv('VITE_DEMO_CUSTOMER_EMAIL', 'demo@example.test')
+    vi.stubEnv('VITE_DEMO_CUSTOMER_PASSWORD', '')
+    renderLogin()
+    expect(screen.queryByRole('button', { name: /demo/i })).not.toBeInTheDocument()
   })
 })

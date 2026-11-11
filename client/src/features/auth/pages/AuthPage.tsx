@@ -1,5 +1,5 @@
-import { ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { AlertCircle } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
 import { errorMessage } from '../../../shared/http/errors'
@@ -7,6 +7,30 @@ import { useLoginMutation, useRegisterMutation } from '../api'
 import { useSession } from '../useSession'
 
 type Origin = { pathname: string; search?: string; hash?: string }
+
+const copy = {
+  login: {
+    eyebrow: 'Welcome back',
+    title: 'Sign in',
+    text: 'Track your orders and check out faster.',
+    submit: 'Sign in',
+    done: 'Signed in',
+    switchText: 'New to Nook?',
+    switchLink: 'Create an account',
+    switchTo: '/register'
+  },
+  register: {
+    eyebrow: 'Join Nook',
+    title: 'Create your account',
+    text: 'Save your details and follow your orders.',
+    submit: 'Create account',
+    done: 'Account created',
+    switchText: 'Already have an account?',
+    switchLink: 'Sign in',
+    switchTo: '/login'
+  }
+}
+
 export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [error, setError] = useState('')
@@ -16,93 +40,89 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const loading = loginState.isLoading || registerState.isLoading
   const location = useLocation()
   const from = (location.state as { from?: Origin } | null)?.from
+  const text = copy[mode]
+  const demoEmail = import.meta.env.VITE_DEMO_CUSTOMER_EMAIL
+  const demoPassword = import.meta.env.VITE_DEMO_CUSTOMER_PASSWORD
+
   if (user) return <Navigate to={from ? `${from.pathname}${from.search ?? ''}${from.hash ?? ''}` : '/'} replace />
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
     setError('')
     try {
       if (mode === 'login') await login({ email: form.email, password: form.password }).unwrap()
       else await register(form).unwrap()
-      toast.success(mode === 'login' ? 'Welcome back' : 'Account created')
+      toast.success(text.done)
     } catch (err) {
       setError(errorMessage(err))
     }
   }
+
   return (
-    <div className="container-app grid min-h-[70vh] place-items-center py-12">
-      <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-xl ring-1 ring-black/5 sm:p-10">
-        <p className="text-xs font-bold uppercase tracking-[.2em] text-forest">
-          {mode === 'login' ? 'Welcome back' : 'Join the nook'}
-        </p>
-        <h1 className="mt-2 text-3xl font-black">{mode === 'login' ? 'Sign in to continue' : 'Create your account'}</h1>
-        <p className="mt-2 text-sm text-black/50">
-          {mode === 'login'
-            ? 'Track orders and enjoy a faster checkout.'
-            : 'Save your details, bag, and order history.'}
-        </p>
-        {error && <div className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        {mode === 'login' && (
-          <div className="mt-5 rounded-xl bg-mint/60 p-3 text-sm">
-            <p className="font-semibold text-forest">Demo accounts</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <button
-                type="button"
-                className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold shadow-sm"
-                onClick={() => setForm({ name: '', email: 'maya@nook.test', password: 'Customer123!' })}
-              >
-                Use customer
-              </button>
-              <button
-                type="button"
-                className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold shadow-sm"
-                onClick={() => setForm({ name: '', email: 'admin@nook.test', password: 'Admin123!' })}
-              >
-                Use admin
-              </button>
-            </div>
-          </div>
+    <div className="container-app grid min-h-[70vh] place-items-center py-(--section-gap)">
+      <div className="w-full max-w-md">
+        <p className="eyebrow">{text.eyebrow}</p>
+        <h1 className="mt-3 text-h1 tracking-[-0.015em]">{text.title}</h1>
+        <p className="mt-4 text-ink-muted">{text.text}</p>
+        {error && (
+          <p role="alert" className="mt-6 flex items-start gap-3 bg-paper-sunken p-4 text-sm text-danger">
+            <AlertCircle size={18} strokeWidth={1.5} className="mt-0.5 shrink-0" aria-hidden="true" />
+            {error}
+          </p>
         )}
-        <form onSubmit={submit} className="mt-7 space-y-4">
+        <form onSubmit={submit} className="mt-8 space-y-5">
           {mode === 'register' && (
-            <label>
+            <label className="block">
               <span className="label">Full name</span>
               <input
                 className="field"
                 required
+                autoComplete="name"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(event) => setForm({ ...form, name: event.target.value })}
               />
             </label>
           )}
-          <label>
+          <label className="block">
             <span className="label">Email address</span>
             <input
               className="field"
               type="email"
               required
+              autoComplete="email"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onChange={(event) => setForm({ ...form, email: event.target.value })}
             />
           </label>
-          <label>
+          <label className="block">
             <span className="label">Password</span>
             <input
               className="field"
               type="password"
               minLength={8}
               required
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              onChange={(event) => setForm({ ...form, password: event.target.value })}
             />
           </label>
-          <button disabled={loading} className="btn-primary mt-2 w-full">
-            {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={17} />
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            {loading ? 'Please wait…' : text.submit}
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-black/50">
-          {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-          <Link className="font-bold text-forest" to={mode === 'login' ? '/register' : '/login'}>
-            {mode === 'login' ? 'Sign up' : 'Sign in'}
+        {mode === 'login' && demoEmail && demoPassword && (
+          <button
+            type="button"
+            className="btn-secondary mt-3 w-full"
+            onClick={() => setForm({ name: '', email: demoEmail, password: demoPassword })}
+          >
+            Fill in the demo customer
+          </button>
+        )}
+        <p className="mt-8 text-sm text-ink-muted">
+          {text.switchText}{' '}
+          <Link className="link-text text-ink" to={text.switchTo}>
+            {text.switchLink}
           </Link>
         </p>
       </div>

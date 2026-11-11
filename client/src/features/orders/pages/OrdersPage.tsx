@@ -1,95 +1,109 @@
-import { ArrowRight, RotateCcw } from 'lucide-react'
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { errorMessage } from '../../../shared/http/errors'
-import { useStartPayment } from '../../checkout'
-import { useListMyOrdersQuery } from '../api'
+import { mediaUrl } from '../../../shared/media/imageUrl'
 import { EmptyState } from '../../../shared/ui/EmptyState'
+import { PageError } from '../../../shared/ui/PageError'
 import { Spinner } from '../../../shared/ui/Spinner'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
+import { useStartPayment } from '../../checkout'
 import { useDate, useMoney } from '../../policy'
-import { mediaUrl } from '../../../shared/media/imageUrl'
+import { useListMyOrdersQuery } from '../api'
+
+const MAX_THUMBNAILS = 4
+
 export function OrdersPage() {
   const money = useMoney()
   const date = useDate()
-  const { data: orders = [], isLoading: loading, error } = useListMyOrdersQuery()
+  const { data: orders = [], isLoading, error, refetch } = useListMyOrdersQuery()
   const startPayment = useStartPayment()
-  useEffect(() => {
-    if (error) toast.error(errorMessage(error))
-  }, [error])
+
   const pay = async (id: string) => {
     try {
       await startPayment(id)
-    } catch (e) {
-      toast.error(errorMessage(e))
+    } catch (err) {
+      toast.error(errorMessage(err))
     }
   }
-  if (loading) return <Spinner full />
+
+  if (isLoading) return <Spinner full />
+  if (error)
+    return (
+      <div className="container-app py-14">
+        <PageError message={errorMessage(error)} retry={refetch} />
+      </div>
+    )
   if (!orders.length)
     return (
       <div className="container-app py-14">
         <EmptyState
           title="No orders yet"
-          text="Once you place an order, its journey will appear here."
+          text="When you place an order, you can follow it here."
           action={
             <Link to="/products" className="btn-primary">
-              Explore products
+              Shop the collection
             </Link>
           }
         />
       </div>
     )
+
   return (
-    <div className="container-app py-10">
-      <h1 className="text-4xl font-black tracking-tight">Your orders</h1>
-      <p className="mt-2 text-black/50">Follow every order from payment to delivery.</p>
-      <div className="mt-8 space-y-4">
-        {orders.map((order) => (
-          <article key={order._id} className="card p-5 sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="text-xs text-black/40">ORDER #{order._id.slice(-8).toUpperCase()}</p>
-                <h2 className="mt-1 font-bold">Placed {date(order.createdAt)}</h2>
+    <div className="container-app pb-(--section-gap) pt-10 sm:pt-14">
+      <h1 className="text-h1 tracking-[-0.015em]">Your orders</h1>
+      <ul className="mt-10 border-t border-line">
+        {orders.map((order) => {
+          const itemCount = order.items.reduce((total, item) => total + item.quantity, 0)
+          return (
+            <li key={order._id} className="grid gap-5 border-b border-line py-6 md:grid-cols-12 md:items-center">
+              <div className="md:col-span-3">
+                <p className="eyebrow">Order #{order.code}</p>
+                <p className="mt-1 font-medium">{date(order.createdAt)}</p>
               </div>
-              <div className="flex gap-2">
-                <StatusBadge value={order.paymentStatus} />
-                <StatusBadge value={order.status} />
-              </div>
-            </div>
-            <div className="mt-5 flex flex-wrap items-end justify-between gap-4 border-t border-black/6 pt-5">
-              <div className="flex -space-x-2">
-                {order.items.slice(0, 4).map((item, i) => (
-                  <div
-                    key={i}
-                    className="grid size-12 place-items-center overflow-hidden rounded-full border-2 border-white bg-cream text-xs"
-                  >
-                    {item.image ? (
-                      <img src={mediaUrl(item.image)} className="h-full w-full object-cover" />
-                    ) : (
-                      item.quantity
+              <div className="flex gap-2 md:col-span-3">
+                {order.items.slice(0, MAX_THUMBNAILS).map((item) => (
+                  <div key={item.product} className="plate aspect-[4/5] w-12">
+                    {item.image && (
+                      <img
+                        src={mediaUrl(item.image)}
+                        alt={item.name}
+                        width={96}
+                        height={120}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
                     )}
                   </div>
                 ))}
               </div>
-              <div className="text-right">
-                <p className="font-bold">{money(order.total, order.currency)}</p>
-                <p className="text-xs text-black/40">{order.items.reduce((n, i) => n + i.quantity, 0)} items</p>
+              <div className="flex flex-wrap gap-2 md:col-span-2">
+                <StatusBadge value={order.paymentStatus} />
+                <StatusBadge value={order.status} />
               </div>
-              <div className="flex gap-2">
-                {order.status === 'pending' && order.paymentStatus === 'unpaid' && (
-                  <button onClick={() => pay(order._id)} className="btn-secondary">
-                    <RotateCcw size={15} /> Resume payment
+              <p className="tabular-nums md:col-span-2 md:text-right">
+                {money(order.total, order.currency)}
+                <span className="block text-caption text-ink-subtle">
+                  {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                </span>
+              </p>
+              <div className="flex flex-wrap gap-4 md:col-span-2 md:justify-end">
+                {order.actions.canPay && (
+                  <button type="button" onClick={() => pay(order._id)} className="link-text min-h-11 text-sm">
+                    Resume payment
                   </button>
                 )}
-                <Link to={`/orders/${order._id}`} className="btn-primary">
-                  View details <ArrowRight size={15} />
+                <Link
+                  to={`/orders/${order._id}`}
+                  className="link-text flex min-h-11 items-center text-sm"
+                  aria-label={`View order #${order.code}`}
+                >
+                  View
                 </Link>
               </div>
-            </div>
-          </article>
-        ))}
-      </div>
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }

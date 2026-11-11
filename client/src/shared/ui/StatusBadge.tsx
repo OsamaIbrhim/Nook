@@ -1,19 +1,6 @@
-const colors: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-800',
-  processing: 'bg-blue-100 text-blue-800',
-  shipped: 'bg-violet-100 text-violet-800',
-  delivered: 'bg-emerald-100 text-emerald-800',
-  cancelled: 'bg-red-100 text-red-700',
-  paid: 'bg-emerald-100 text-emerald-800',
-  unpaid: 'bg-stone-100 text-stone-600',
-  failed: 'bg-red-100 text-red-700',
-  refunded: 'bg-purple-100 text-purple-700'
-}
 export function StatusBadge({ value }: { value: string }) {
   return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${colors[value] || 'bg-stone-100'}`}
-    >
+    <span className="inline-flex rounded-[2px] border border-ink-muted px-2 py-1 text-eyebrow font-medium uppercase text-ink">
       {value}
     </span>
   )
